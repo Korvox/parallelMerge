@@ -1,7 +1,6 @@
 $CC = gcc
-SRCS = ptMerge.c
-HEADERS = ptMerge.h
-PROG = ptMerge
+PTSRCS = pthreads/merge.c pthreads/merge.h
+
 CFLAGS = -O2 -std=c1x -Wall
 LFLAGS = -pthread -o $(PROG)
 RMFLAGS = -f
@@ -10,12 +9,18 @@ $(NUMTHREADS) = 8
 FILEPARAS = $(NUMTHREADS) data.txt
 RNGPARAS = $(NUMTHREADS) 4096
 
-compile:$(CC) $(SRCS) $(HEADERS)
+ptc:$(CC) $(SRCS) $(HEADERS)
 	$(CC) $(CFLAGS) $(LFLAGS) $(SRCS)
+	
+mpic:
 
+cudac:
+
+	
 test: $(PROG)
-	./$(PROG) $(FILEPARAS) > fileOut.txt
-	./$(PROG) $(RNGPARAS) > rngOut.txt
+	$(PROG) $(FILEPARAS) > fileOut.txt
+	$(PROG) $(RNGPARAS) > rngOut.txt
 
+	
 clean:
 	rm $(RMFLAGS) $(PROG)
