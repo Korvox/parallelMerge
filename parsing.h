@@ -31,7 +31,7 @@ typedef struct merge_t {
 
 /* Structure for the arguments processing */
 typedef struct mergeParas {
-	unsigned char dataType;
+	unsigned char dataType = 0;
 	unsigned long length,
 		numThreads = 1;
 	void *array;

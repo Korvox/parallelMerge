@@ -19,9 +19,9 @@ void merge_fileErrorExit(FILE *toClose) {
 
 /* This error prints the usage of merge */
 void merge_helpExit(char *callingName) {
-	printf("Usage: %s [flags] or [listsize]\n\
-		\tflags:\t-t, -f [filename], -n [threads]\n\
-		\t-t:\tTime execution of sort\n\
+	printf("Usage: %s [flags] [listsize]\n\
+		\tflags:\t-t [type #], -f [filename], -n [threads],\n\
+		\t-t:\tType of elements.  If not specified, defaults to long int.\n\
 		\t-f:\tRead array from file [filename]\n\
 		\t-n:\tSort using [threads] worker threads\n\
 		\t-help:\tPrints this dialogue.  Doesn't sort.\n\n\
@@ -173,6 +173,7 @@ double * merge_randomDoubles(unsigned long length) {
 	for(length--; length >= 0; length--)
 		array[counter] = (double)rand() / rand()
 	return array;
+}
 
 /* Parse the arguements of program parameters into a mergeParas */
 signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
@@ -182,21 +183,42 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 		return -1;
 
 	int counter = 1;
-	char generated = 0;
+	char generated = 0,
+		typed = 0;
 
 	while(counter < argc) {
 		if(argv[counter][0] == '-') {
 			switch(argv[counter][1]) {
 				/* Set the time flag, if it is already set bad formatting */
 				case 't':
-					if(args->timing)
-						fprintf(stderr, "Can not set timing multiple times\n");
+					if(typed++) {
+						fprintf(stderr, "Can't assign multiple types\n");
 						return -1;
-					args.timing = 1;
+					}
+					switch(argv[++counter][0]) {
+						case '0':
+							args->dataType = MLONG;
+							break;
+						case '1':
+							args->dataType = MLONGLONG;
+							break;
+						case '2':
+							args->dataType = MDOUBLE;
+							break;
+
+						default:
+							fprintf(stderr, "Invalid type declarator.  Use:\n \
+								\t0 for long, 1 for long long, or 2 for double\n");
+							return -1;
+					}
 					break;
 
 				/* Parse a file name and generate an array from file */
 				case 'f':
+					if(generated++) {
+						fprintf(stderr, "Can't generate multiple arrays\n");
+						return -1;
+					}
 					args->toMerge = merge_extractArray(argv[++counter]);
 					break;
 
@@ -226,35 +248,34 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				 * could do the help case, we may not want to exit in
 				 * the general case */
 				default:
-					fprintf(stderr, "Bad formatting of flag argument %d\n",
-						counter);
+					fprintf(stderr, "Bad formatting of flag argument #%d: %s\n",
+						counter, argv[counter]);
 					return -1;
 			}
 			
 		/* Assume we have a random array generator value */
 		} else {
 			/* If generated is set, we can't use a random array */
-			if(generated)
+			if(generated++) {
 				fprintf(stderr, "Can't generate multiple arrays\n");
 				return -1;
-
+			}
 			unsigned long numRands = merge_parseUnsignedLong(argv[counter]);
 			if(numRands == 0) {
 				fprintf(stderr, "Formatting error on number of random numbers \
-					to generate for array.  Try again.\n");
+					to generate.  Try again.\n");
 				return -1;
 			}
 			args.toMerge = merge_randomArray(numRands);
-			generated = 1;
 		}
 		counter++;
 	}
 
 	/* If we never built an array, bad formatting */
-	if(!generated)
+	if(!generated) {
 		fprintf(stderr, "Must generate an array by either giving size or file\n");
 		return -1;
-
+	}
 	/* Return 0 on a successful parse */
 	return 0;
 }
