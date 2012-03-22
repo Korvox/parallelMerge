@@ -4,7 +4,7 @@
 
 #include "serialSort.h"
 
-void * serialSort(void*start,  unsigned long length, unsigned char type) {
+void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 	//@todo implement a serial sort.  Probably insertion.
 	
