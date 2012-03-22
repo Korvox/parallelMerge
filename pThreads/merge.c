@@ -9,12 +9,6 @@
  * is 16 on caelus */
 const unsigned short merge_maxThreads = 16;
 
-void merge_serialSort(void * start, unsigned long length, unsigned char type) {
-
-	//@todo implement serial sorting algorithm for sub arrays, bucket sort?
-
-}
-
 /* Threadable function to merge sort a data range,
  * Takes a pt_mergeData cast into void* */
 void merge_worker(void* args) {

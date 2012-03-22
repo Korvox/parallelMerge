@@ -6,6 +6,7 @@
 #define _MPIMERGE_
 
 #include "../parsing.h"
+#include <../serialSort.h>
 #include <mpi.h>
 
 void * merge(mergeParas*);

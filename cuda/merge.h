@@ -6,6 +6,7 @@
 #define _CUDAMERGE_
 
 #include "../parsing.h"
+#include <../serialSort.h>
 #include <time.h>
 
 void * merge(mergeParas*);
