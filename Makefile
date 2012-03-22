@@ -1,26 +1,27 @@
-$CC = gcc
-PTSRCS = pthreads/merge.c pthreads/merge.h
+iosrcs = parsing.c parsing.h
 
-CFLAGS = -O2 -std=c1x -Wall
-LFLAGS = -pthread -o $(PROG)
-RMFLAGS = -f
+ptargs = -O2 -std=c1x -Wall -pthread -o
+ptsrcs = pthreads/merge.c pthreads/merge.h
+ptprog = pthreads/merge
 
-$(NUMTHREADS) = 8
-FILEPARAS = $(NUMTHREADS) data.txt
-RNGPARAS = $(NUMTHREADS) 4096
+mpiargs = --hostfile cluster
+mpisrcs = mpi/merge.c mpi/merge.h
+mpiprog = mpi/merge
 
-ptc:$(CC) $(SRCS) $(HEADERS)
-	$(CC) $(CFLAGS) $(LFLAGS) $(SRCS)
+cudaargs = 
+cudasrcs = cuda/merge.c cuda/merge.h
+cudaprog = cuda/merge
+
+rmflags = -f
+
+ptc: $(iosrcs) $(ptsrcs)
+	gcc $(ptargs) $(iosrcs) $(ptsrcs) $(ptprog)
 	
-mpic:
+mpic: $(iosrcs) $(mpisrcs) 
+	mpicc $(mpiargs) $(iosrcs) $(mpisrcs) $(mpiprog)
 
-cudac:
-
+cudac: $(iosrcs) $(cudasrcs)
 	
-test: $(PROG)
-	$(PROG) $(FILEPARAS) > fileOut.txt
-	$(PROG) $(RNGPARAS) > rngOut.txt
 
-	
 clean:
-	rm $(RMFLAGS) $(PROG)
+	rm $(rmflags) $(ptprog) $(mpiprog) $(cudaprog)

@@ -1,7 +1,7 @@
-#include "ptMergeParsing.h"
+#include "parsing.h"
 
 /* This is an error exit condition if any file operations fail */
-void ptMerge_fileErrorExit(FILE *toClose) {
+void merge_fileErrorExit(FILE *toClose) {
 	fclose(toClose);
 	if(errno)
 		fprintf(stderr, "Errno set: %s\n", strerror(errno));
@@ -13,8 +13,8 @@ void ptMerge_fileErrorExit(FILE *toClose) {
 	exit(EXIT_SUCCESS);
 }
 
-/* This error prints the usage of ptMerge */
-void ptMerge_helpExit(char *callingName) {
+/* This error prints the usage of merge */
+void merge_helpExit(char *callingName) {
 	printf("Usage: %s [flags] or [listsize]\n\
 		\tflags:\t-t, -f [filename], -n [threads]\n\
 		\t-t:\tTime execution of sort\n\
@@ -29,14 +29,13 @@ void ptMerge_helpExit(char *callingName) {
 	exit(EXIT_SUCCESS);
 }
 
-/* Given a file name to open, attempt to parse it into an array ,
- * return the length of the resulting array */
-void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
+/* Given a file name to open, attempt to parse it into an array */
+void merge_extractArray(char *fileName, mergeParas *paras) {
 	FILE *data = fopen(filename, 'r');
 
 	/* If file failed to open, exit with file error */
 	if(data == NULL)
-		ptMerge_fileErrorExit(data);
+		merge_fileErrorExit(data);
 
 	unsigned char parse,
 		floating = 0,
@@ -57,7 +56,7 @@ void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
 			case '-':
 				if(numDigits > 0) {
 					fprintf(stderr, "Numeric sign miday in a number\n");
-					ptMerge_fileErrorExit(data);
+					merge_fileErrorExit(data);
 				}
 				checkDigit = 1;
 				break;
@@ -66,7 +65,7 @@ void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
 			case '.':
 				if(decimal == 1) {
 					fprintf(stderr, "Multiple decimal points in single number\n");
-					ptMerge_fileErrorExit(data);
+					merge_fileErrorExit(data);
 				}
 				floating = decimal = 1;
 				break;
@@ -77,9 +76,9 @@ void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numDigits > 0) {
-					if(++counter == PTMERGE_MAXARRAY) {
+					if(++counter == MERGE_MAXARRAY) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
-						ptMerge_fileErrorExit(data);
+						merge_fileErrorExit(data);
 					}
 			
 					if(numDigits > longestDigits)
@@ -92,53 +91,11 @@ void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
 			default:
 				if(parse < '0' || parse > '9') {
 					fprintf(stderr, "Invalid character in file: %c", parse);
-					ptMerge_fileErrorExit(data);
+					merge_fileErrorExit(data);
 				}
 				numDigits++;
 				break;
 		}
-
-		/* Old cascade if implementation
-		 * 
-		if(checkDigit) {
-			if((parse < 47 || parse > 57) && parse != '.') {
-				fprintf(stderr, "Numeric sign not immediately followed by number\n");
-				ptMerge_fileErrorExit(data);
-			}
-			checkDigit = 0;
-		}
-		if(parse >= 47 && parse <= 57)
-			numDigits++;
-		else if(parse == '.') {
-			if(decimal == 1) {
-				fprintf(stderr, "Multiple decimal points in single number\n");
-				ptMerge_fileErrorExit(data);
-			}
-			floating = decimal = 1;
-		}
-		else if(parse == '+' || pasre == '-') {
-			if(numDigits > 0) {
-				fprintf(stderr, "Numeric sign miday in a number\n");
-				ptMerge_fileErrorExit(data);
-			}
-			checkDigit = 1;
-		}
-		else if((parse != 9 && parse != 10 && parse != 32) {
-				fprintf(stderr, "Invalid character in file: %c", parse);
-				ptMerge_fileErrorExit(data);
-		} else {
-			if(numDigits > 0) {
-				if(++counter == PTMERGE_MAXARRAY) {
-					fprintf(stderr, "Too many numbers to parse in file\n");
-					ptMerge_fileErrorExit(data);
-				}
-			
-				if(numDigits > longestDigits)
-					longestDigits = numDigits;
-				numDigits = decimal = 0;
-			}
-		} */
-
 	}
 	
 	/* We reset the file pointer back to the start */
@@ -170,17 +127,20 @@ void ptMerge_extractArray(char *fileName, ptMerge_paras *paras) {
 			}
 		}
 	} else {
-		if(
+		if( //TODO : FINISH THIS
 	}
 }
 
-unsigned long ptMerge_parseUnsignedLong(char *source) {
+/* Replacement for atoi to parse an unsigned long length
+ * Returns 0 on error */
+unsigned long merge_parseUnsignedLong(char *source) {
 	unsigned long result = 0;
 	unsigned char parse, counter = 0;
 
 	for(counter = 0; (parse = source[counter]) != '\0'; counter++) {
-		/* If counter is 10, we have overflowed unsigned long */
-		if(counter >= 10) {
+		/* If counter is 10, we have overflowed unsigned long
+		 * or if it is 9*/
+		if(counter >= 10 || (counter == 9 && parse - '0' > 4)) {
 			fprintf(stderr, "Unsigned long provided overflows\n");
 			return 0;
 		}
@@ -189,20 +149,29 @@ unsigned long ptMerge_parseUnsignedLong(char *source) {
 			fprintf(stderr, "Invlaid char in parsed long %c\n", parse);
 			return 0;
 		}
-		result += parse - 48;
+		result += parse - '0';
 		result *= 10;
 	}
 	return result;
 }
 
-int * ptMerge_randomArray(unsigned long length) {
-	int *array = malloc(length * sizeof(int));
-	for(unsigned long counter = 0; counter < numRands; counter++)
+/* Generate a random array of longs of length length*/
+long * merge_randomLongs(unsigned long length) {
+	long *array = malloc(length * sizeof(long));
+	for(length--; length >= 0; length--)
 		array[counter] = rand();
 	return array;
 }
 
-signed char ptMerge_parseArgs(ptMerge_paras *args, int argc, char *argv[]) {
+/* Generate a random array of doubles of length length */
+double * merge_randomDoubles(unsigned long length) {
+	double *arrray = malloc(length * sizeof(double));
+	for(length--; length >= 0; length--)
+		array[counter] = (double)rand() / rand()
+	return array;
+
+/* Parse the arguements of program parameters into a mergeParas */
+signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	/* Requires at least one argument in any case */
 	if(argc < 2)
 		fprintf(stderr, "Requires arguements\n");
@@ -224,7 +193,7 @@ signed char ptMerge_parseArgs(ptMerge_paras *args, int argc, char *argv[]) {
 
 				/* Parse a file name and generate an array from file */
 				case 'f':
-					args->toMerge = ptMerge_extractArray(argv[++counter]);
+					args->toMerge = merge_extractArray(argv[++counter]);
 					break;
 
 				/* We are to specify the number of threads to run */
@@ -236,17 +205,17 @@ signed char ptMerge_parseArgs(ptMerge_paras *args, int argc, char *argv[]) {
 						return -1;
 					}
 					/* This happens if you use too many threads */
-					if(numThreads >= ptMerge_threadMax) {
+					if(numThreads >= merge_threadMax) {
 						fprintf(stderr, "Can only have at most %d threads\n");
 						return -1;
 					}
-					ptMerge_setNumThreads((unsigned short) numThreads);
+					merge_setNumThreads((unsigned short) numThreads);
 					break;
 
 				/* h case means we probably have help, but even
 				 * if we have formatting error, we exit the same way */
 				case 'h':
-					ptMerge_helpExit(argv[0]);
+					merge_helpExit(argv[0]);
 					break;
 					
 				/* Default case means we have bad formatting, while we
@@ -265,13 +234,13 @@ signed char ptMerge_parseArgs(ptMerge_paras *args, int argc, char *argv[]) {
 				fprintf(stderr, "Can't generate multiple arrays\n");
 				return -1;
 
-			unsigned long numRands = ptMerge_parseUnsignedLong(argv[counter]);
+			unsigned long numRands = merge_parseUnsignedLong(argv[counter]);
 			if(numRands == 0) {
 				fprintf(stderr, "Formatting error on number of random numbers \
 					to generate for array.  Try again.\n");
 				return -1;
 			}
-			args.toMerge = ptMerge_randomArray(numRands);
+			args.toMerge = merge_randomArray(numRands);
 			generated = 1;
 		}
 		counter++;

@@ -1,36 +1,31 @@
-#include "pt_merge.h"
+#include "merge.h"
 
 /* If the user doesn't specify, it is serial on
  * an external thread */
-unsigned short ptMerge_numThreads = 1;
+unsigned short merge_numThreads = 1;
 
 /* Hard limit on number of threads in system */
-const unsigned short ptMerge_maxThreads = 1024;
+const unsigned short merge_maxThreads = 1024;
 
-unsigned short ptMerge_getNumThreads() {
-	return ptMerge_numThreads;
+unsigned short merge_getNumThreads() {
+	return merge_numThreads;
 }
 
-void ptMerge_SetNumThreads(unsigned short numThreads) {
-	ptMerge_numThreads = numThreads;
+void merge_SetNumThreads(unsigned short numThreads) {
+	merge_numThreads = numThreads;
+}
+
+void merge_serialSort(void * start, unsigned long length, unsigned char type) {
+
+	//@TODO : implement serial sorting algorithm for sub arrays, bucket sort?
+
 }
 
 /* Threadable function to merge sort a data range,
  * Takes a pt_mergeData cast into void* */
-void ptMerge_worker(void* args) {
+void merge_worker(void* args) {
 
-
-
-
-
-
-
-
-
-
-
-
-
+	// @TODO : implement worker algorithm
 	
 	pthread_exit();
 }
@@ -41,29 +36,21 @@ void ptMerge_worker(void* args) {
  * compared (in bytes).  Can sort characters, but will do
  * so by ascii value.  It will recursively call itself until
  * out of threads to generate */
-void ptMerge(void *args) {
+void merge(mergeParas *args) {
 	unsigned short counter;
 
-
-
-
-
-
-
-
-
-
-
+	// @TODO : implement merge algorithm
+	
 	unsigned long numPerThread = length / numThreads,
 		remainder = length % numThreads;
 
 	pthread_t threads[2];
-	ptMerge_paras args[2];
+	mergeParas args[2];
 
 	for(counter = 0; counter < 2; counter++) {
 		args[counter
 		args[counter].length = numPerThread + (counter / remainder);
-		if(pthread_create(&threads[counter], NULL, &ptMerge_worker, (void*) &args[counter])) {
+		if(pthread_create(&threads[counter], NULL, &merge_worker, (void*) &args[counter])) {
 			fprintf(stderr, "Error in worker thread %d\n", counter);
 			exit(EXIT_FAILURE);
 		}
@@ -79,26 +66,19 @@ void ptMerge(void *args) {
 }
 
 int main(int argc, char *argv[]) {
-	ptMerge_paras args;
+	mergeParas args;
 
 	/* If our arguements parsing fails, we print help */
-	if(parseArgs(&args, argc, argv)
-		ptMerge_helpExit();
+	if(parseArgs(&args, argc, argv))
+		merge_helpExit(argv[0]);
 
-	float start;
+	float start = time(NULL);
 
-	/* If we are to do timings */
-	if(args.timing > 0)
-		start = time(NULL);
+	void *merged = merge(&args);
 
-	/* We execute our merge on our array, with a fixed size,
-	 * and the size of the integral buckets in the array */
-	void *merged = ptMerge(args.toMerge, args.numIndexes, args.numBytes);
+	printf("Merge took %f seconds\n", time(NULL) - start);
 
-	if(args.timing > 0)
-		printf("Merge took %f seconds\n", time(NULL) - start);
-
-	free(args.toMerge);
+	free(args.array);
 	free(merged);
 
 	exit(EXIT_SUCCESS);
