@@ -4,20 +4,10 @@
 
 #include "merge.h"
 
-/* If the user doesn't specify, it is serial on
- * an external thread */
-unsigned short merge_numThreads = 1;
-
-/* Hard limit on number of threads in system */
-const unsigned short merge_maxThreads = 1024;
-
-unsigned short merge_getNumThreads() {
-	return merge_numThreads;
-}
-
-void merge_SetNumThreads(unsigned short numThreads) {
-	merge_numThreads = numThreads;
-}
+/* Hard limit on number of threads in system
+ * NOTE: maximum number of single machine cores
+ * is 16 on caelus */
+const unsigned short merge_maxThreads = 16;
 
 void merge_serialSort(void * start, unsigned long length, unsigned char type) {
 
