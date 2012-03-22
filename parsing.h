@@ -1,3 +1,7 @@
+/* Parallel Merge Parsing
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #ifndef _PTPARSING_
 #define _PTPARSING_
 
@@ -15,6 +19,15 @@
 #define MLONG 0
 #define MLONGLONG 1
 #define MDOUBLE 2
+
+/* Structure to contain necessary thread data
+ * for parallel merging. */
+typedef struct merge_t {
+	void *start;
+	unsigned long length;
+	unsigned short size,
+		numThreads;
+} merge_t;
 
 /* Structure for the arguments processing */
 typedef struct mergeParas {

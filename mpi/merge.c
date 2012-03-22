@@ -1,9 +1,21 @@
+/* MPI Distributed Merging
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #include "merge.h"
 
 void * merge(mergeParas *args) {
+	int id, nprocs;
+	MPI_Init(NULL, NULL);
+	MPI_Comm_rank(MPI_COMM_WORLD, &id);
+	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
 
-	//TODO : IMPLEMENT SORT
+	//@todo IMPLEMENT SORT
 
+
+	MPI_Finalize();
+
+	return array;
 }
 
 int main(int argc, char *argv[]) {

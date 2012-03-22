@@ -1,3 +1,7 @@
+/* MPI Distributed Merging
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #ifndef _MPIMERGE_
 #define _MPIMERGE_
 

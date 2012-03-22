@@ -1,3 +1,7 @@
+/* CUDA GPU Merging
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #ifndef _CUDAMERGE_
 #define _CUDAMERGE_
 

@@ -1,3 +1,7 @@
+/* Pthreads Shared Memory Merging
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #include "merge.h"
 
 /* If the user doesn't specify, it is serial on
@@ -17,7 +21,7 @@ void merge_SetNumThreads(unsigned short numThreads) {
 
 void merge_serialSort(void * start, unsigned long length, unsigned char type) {
 
-	//@TODO : implement serial sorting algorithm for sub arrays, bucket sort?
+	//@todo implement serial sorting algorithm for sub arrays, bucket sort?
 
 }
 
@@ -25,7 +29,7 @@ void merge_serialSort(void * start, unsigned long length, unsigned char type) {
  * Takes a pt_mergeData cast into void* */
 void merge_worker(void* args) {
 
-	// @TODO : implement worker algorithm
+	//@todo implement worker algorithm
 	
 	pthread_exit();
 }
@@ -39,7 +43,7 @@ void merge_worker(void* args) {
 void merge(mergeParas *args) {
 	unsigned short counter;
 
-	// @TODO : implement merge algorithm
+	// @@todo implement merge algorithm
 	
 	unsigned long numPerThread = length / numThreads,
 		remainder = length % numThreads;

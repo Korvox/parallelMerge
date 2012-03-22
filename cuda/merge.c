@@ -1,8 +1,12 @@
+/* CUDA GPU Merging
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+ 
 #include "merge.h"
 
 void * merge(mergeParas *args) {
 
-	//TODO : IMPLEMENT SORT
+	//@todo IMPLEMENT SORT
 
 }
 

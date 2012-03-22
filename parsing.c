@@ -1,3 +1,7 @@
+/* Parallel Merge Parsing
+ * @author Matthew Scheirer
+ * @license GPL v3 */
+
 #include "parsing.h"
 
 /* This is an error exit condition if any file operations fail */
@@ -127,7 +131,7 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 			}
 		}
 	} else {
-		if( //TODO : FINISH THIS
+		if( //@todo FINISH THIS
 	}
 }
 
