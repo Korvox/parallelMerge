@@ -192,9 +192,6 @@ double * merge_randomDoubles(unsigned long length) {
 	return array;
 }
 
-//@todo Change parsing logic - require a type for files, default to \
-	long for non-files, and parse files after parsing other args
-
 /* Parse the arguements of program parameters into a mergeParas */
 signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	/* Requires at least one argument in any case */
@@ -295,9 +292,12 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 		counter++;
 	}
 
-	/* If we have a valid filename */
+	/* If we have a valid filename.  Note, if a dataType isn't specified,
+	 * the file is assumed to hold valid longs. */
 	if(filename != NULL) {
 		switch(args->dataType) {
+			//@ todo convert file parser into seperate methods for each data type \
+				also wtb templates in c, holy shit this duplication is gay
 			case MLONG:
 				args->array = merge_extractLongArray(filename);
 				break;

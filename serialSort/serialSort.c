@@ -6,6 +6,6 @@
 
 void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
-	//@todo implement a serial sort.  Probably insertion.
+	//@todo implement a serial version of merge sort.
 	
 }

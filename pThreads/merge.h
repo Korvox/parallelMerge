@@ -5,10 +5,7 @@
 #ifndef _PTMERGE_
 #define _PTMERGE_
 
-#include "../parsing.h"
-#include "../serialSort.h"
 #include <semaphore.h>
-#include <time.h>
 
 unsigned short merge_getNumThreads();
 void merge_setNumThreads(unsigned short);
