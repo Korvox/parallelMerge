@@ -143,22 +143,34 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
  * Returns 0 on error */
 unsigned long merge_parseUnsignedLong(char *source) {
 	unsigned long result = 0;
-	unsigned char parse, counter = 0;
+	unsigned char parse,
+		counter = 0;
 
-	for(counter = 0; (parse = source[counter]) != '\0'; counter++) {
-		/* If counter is 10, we have overflowed unsigned long
-		 * or if it is 9*/
-		if(counter >= 10 || (counter == 9 && parse - '0' > 4)) {
-			fprintf(stderr, "Unsigned long provided overflows\n");
-			return 0;
-		}
+	while(parse = source[counter]) != '\0') {
 		/* If we have an invalid char anywhere */
-		if(parse > '9' || parse < '0') {
+		if(parse < '0' || parse > '9') {
 			fprintf(stderr, "Invlaid char in parsed long %c\n", parse);
 			return 0;
 		}
-		result += parse - '0';
+
+		/* Covert parse into its true digit value */
+		parse -= '0';
+
+		/* If we are bordering on overflow */
+		if(++counter >= 10) {
+			if(counter > 10) {
+				fprintf(stderr, "Given long has too many digits, exceeds %lu",
+					ULONG_MAX);
+				return 0;
+			}
+			if(result * 10 + parse > ULONG_MAX) {
+				fprintf(stderr, "Given long overflows a 10 digit ulong\n");
+				return 0;
+			}	
+		}
+		
 		result *= 10;
+		result += parse;
 	}
 	return result;
 }
