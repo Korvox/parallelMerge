@@ -7,7 +7,7 @@
 /* Hard limit on number of threads in system
  * NOTE: maximum number of cluster compute nodes
  * in lab is 8 * 8 + 16 = 80 */
-const unsigned short merge_maxThreads = 80;
+const unsigned short merge_maxThreads = 128;
 
 void * merge(mergeParas *args) {
 	int id, nprocs;

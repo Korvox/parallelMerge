@@ -1,27 +1,28 @@
-iosrcs = parsing.c parsing.h
+iosrcs = parsing.c
+smsrcs = serialMerge.c
 
 ptargs = -O2 -std=c1x -Wall -pthread -o
-ptsrcs = pthreads/merge.c pthreads/merge.h
+ptsrcs = pthreads/merge.c
 ptprog = pthreads/merge
 
 mpiargs = --hostfile cluster
-mpisrcs = mpi/merge.c mpi/merge.h
+mpisrcs = mpi/merge.c
 mpiprog = mpi/merge
 
 cudaargs = 
-cudasrcs = cuda/merge.c cuda/merge.h
+cudasrcs = cuda/merge.c
 cudaprog = cuda/merge
 
 rmflags = -f
 
-ptc: $(iosrcs) $(ptsrcs)
-	gcc $(ptargs) $(iosrcs) $(ptsrcs) $(ptprog)
+ptc: $(iosrcs) $(smsrcs) $(ptsrcs)
+	gcc $(ptargs) $(iosrcs) $(smsrcs) $(ptsrcs) $(ptprog)
 	
-mpic: $(iosrcs) $(mpisrcs) 
-	mpicc $(mpiargs) $(iosrcs) $(mpisrcs) $(mpiprog)
+mpic: $(iosrcs) $(smsrcs) $(mpisrcs) 
+	mpicc $(mpiargs) $(iosrcs) $(smsrcs) $(mpisrcs) $(mpiprog)
 
-cudac: $(iosrcs) $(cudasrcs)
+cudac: $(iosrcs) $(smsrcs) $(cudasrcs)
 	
-
+.PHONY: clean
 clean:
 	rm $(rmflags) $(ptprog) $(mpiprog) $(cudaprog)

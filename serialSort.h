@@ -5,8 +5,21 @@
 #ifndef _SERIALSORTER_
 #define _SERIALSORTER_
 
-/* We get definitions for types in parsing */
-#include "../parsing.h"
+//#include "../parsing.h"
+
+/* These macros are used to denote the type of elements in array */
+#ifndef MLONG
+#define MLONG 0
+#endif
+#ifndef MLONGLONG
+#define MLONGLONG 1
+#endif
+#ifndef MFLOAT
+#DEFINE MFLOAT 2
+#endif
+#ifndef MDOUBLE
+#define MDOUBLE 3
+#endif
 
 void * serialSort(void*, unsigned long, unsigned char);
 

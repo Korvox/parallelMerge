@@ -13,12 +13,25 @@
 
 /* Max # element bound.  Consider this * size of container
  * for size of array */
-#define MERGE_MAXARRAY 8192
+const unsigned short merge_maxArray = 65535
+
+/* Max number of threads to be allowed
+ * @depreciated ONE SIZE DOES NOT FIT ALL */
+//const unsigned short merge_maxThreads = 8192
 
 /* These macros are used to denote the type of elements in array */
+#ifndef MLONG
 #define MLONG 0
+#endif
+#ifndef MLONGLONG
 #define MLONGLONG 1
-#define MDOUBLE 2
+#endif
+#ifndef MFLOAT
+#DEFINE MFLOAT 2
+#endif
+#ifndef MDOUBLE
+#define MDOUBLE 3
+#endif
 
 /* Structure to contain necessary thread data
  * for parallel merging. */

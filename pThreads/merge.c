@@ -7,7 +7,7 @@
 /* Hard limit on number of threads in system
  * NOTE: maximum number of single machine cores
  * is 16 on caelus */
-const unsigned short merge_maxThreads = 16;
+const unsigned short merge_maxThreads = 32;
 
 /* Threadable function to merge sort a data range,
  * Takes a pt_mergeData cast into void* */

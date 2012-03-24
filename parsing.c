@@ -29,9 +29,11 @@ void merge_helpExit(char *callingName) {
 		\t[listsize] required, number of elements to\n\
 		\t have in randomly generated array to sort\n",
 		callingName);
-		
 	exit(EXIT_SUCCESS);
 }
+
+//@todo BREAK THIS UP into long, long long, float, and double file parsers. \
+	Assume correctness, if anything is wrong just file error exit.
 
 /* Given a file name to open, attempt to parse it into an array */
 void merge_extractArray(char *fileName, mergeParas *paras) {
@@ -48,7 +50,6 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 		numDigits = 0,
 		checkDigit = 0;
 	unsigned long counter = 0;
-	long double parsedVal;
 
 	/* We need to search for decimal points to determine if file values are
 	 * floating or not.  Also, check for file integrity, so we can directly parse
@@ -80,11 +81,11 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numDigits > 0) {
-					if(++counter == MERGE_MAXARRAY) {
+					if(++counter == merge_maxArray) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
 						merge_fileErrorExit(data);
 					}
-			
+
 					if(numDigits > longestDigits)
 						longestDigits = numDigits;
 					numDigits = 0;
@@ -101,16 +102,16 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 				break;
 		}
 	}
-	
+
 	/* We reset the file pointer back to the start */
 	rewind(data);
 
 	/* We either process the file as doubles or ints for the array */
 	if(floating) {
 		/* Set the paras size of elements */
-		paras->numBytes = sizeof(double);
+		paras->dataType = MDOUBLE;
 		/* We allocate exactly as many doubles as we will parse */
-		paras->toMerge = malloc(sizeof(double) * counter);
+		double *data = malloc(sizeof(double) * counter);
 
 		/* We can have a char buffer for reading in exactly as
 		 * large as the longest double we will parse*/
@@ -126,11 +127,14 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 			 * otherwise we are just skipping trailing whitespace chars */
 			else if(charIndex > 0) {
 				parsedDouble[charIndex] = '\0';
-				paras->toMerge[arrayIndex++] = strtod(&parsedDouble, NULL);
+				data[arrayIndex++] = strtod(&parsedDouble, NULL);
 				charIndex = 0;
 			}
+
+		paras->array = data;
 		}
 	} else {
+		/* Else parse longs or long longs */
 		if( //@todo FINISH THIS
 	}
 }
@@ -167,6 +171,14 @@ long * merge_randomLongs(unsigned long length) {
 	return array;
 }
 
+/* Generate a random array of floats of length length */
+float * merge_randomfloats(unsigned long length) {
+	float *arrray = malloc(length * sizeof(float));
+	for(length--; length >= 0; length--)
+		array[counter] = (float)rand() / rand()
+	return array;
+}
+
 /* Generate a random array of doubles of length length */
 double * merge_randomDoubles(unsigned long length) {
 	double *arrray = malloc(length * sizeof(double));
@@ -174,6 +186,9 @@ double * merge_randomDoubles(unsigned long length) {
 		array[counter] = (double)rand() / rand()
 	return array;
 }
+
+//@todo Change parsing logic - require a type for files, default to \
+	long for non-files, and parse files after parsing other args
 
 /* Parse the arguements of program parameters into a mergeParas */
 signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
@@ -183,8 +198,9 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 		return -1;
 
 	int counter = 1;
-	char generated = 0,
-		typed = 0;
+	unsigned char typed = 0,
+		*filename = NULL;
+	unsigned long numRands = 0;
 
 	while(counter < argc) {
 		if(argv[counter][0] == '-') {
@@ -203,39 +219,42 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 							args->dataType = MLONGLONG;
 							break;
 						case '2':
+							args->dataType = MFLOAT;
+							break;
+						case '3':
 							args->dataType = MDOUBLE;
 							break;
-
 						default:
 							fprintf(stderr, "Invalid type declarator.  Use:\n \
 								\t0 for long, 1 for long long, or 2 for double\n");
 							return -1;
 					}
 					break;
-
+					
 				/* Parse a file name and generate an array from file */
 				case 'f':
-					if(generated++) {
+					if(filename != NULL || numRands != 0) {
 						fprintf(stderr, "Can't generate multiple arrays\n");
 						return -1;
 					}
-					args->toMerge = merge_extractArray(argv[++counter]);
+					filename = argv[++counter];
 					break;
-
+					
 				/* We are to specify the number of threads to run */
 				case 'n':
-					int numThreads = atoi(&argv[++counter]);
+					unsigned long numThreads = merge_parseUnsignedLong(argv[++counter]);
 					/* This happens if you use bad formatting */
 					if(numThreads <= 0) {
 						fprintf(stderr, "Bad formatting of number of threads\n");
 						return -1;
 					}
-					/* This happens if you use too many threads */
-					if(numThreads >= merge_threadMax) {
-						fprintf(stderr, "Can only have at most %d threads\n");
+					/* This happens if you use too many threads
+					 * @todo CANT DO THIS, THREAD MAX IS IN MERGE.C
+					if(numThreads >= merge_maxThreads) {
+						fprintf(stderr, "Can only have at most %d threads\n", MERGE_MAXTHREADS);
 						return -1;
-					}
-					merge_setNumThreads((unsigned short) numThreads);
+					} */
+					args->numThreads = numThreads;
 					break;
 
 				/* h case means we probably have help, but even
@@ -243,7 +262,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				case 'h':
 					merge_helpExit(argv[0]);
 					break;
-					
+
 				/* Default case means we have bad formatting, while we
 				 * could do the help case, we may not want to exit in
 				 * the general case */
@@ -252,27 +271,66 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 						counter, argv[counter]);
 					return -1;
 			}
-			
+
 		/* Assume we have a random array generator value */
 		} else {
-			/* If generated is set, we can't use a random array */
-			if(generated++) {
+			if(filename != NULL || numRands != 0) {
 				fprintf(stderr, "Can't generate multiple arrays\n");
 				return -1;
 			}
-			unsigned long numRands = merge_parseUnsignedLong(argv[counter]);
-			if(numRands == 0) {
+			
+			numRands = merge_parseUnsignedLong(argv[++counter]);
+			
+			if(numRands <= 0) {
 				fprintf(stderr, "Formatting error on number of random numbers \
 					to generate.  Try again.\n");
 				return -1;
 			}
-			args.toMerge = merge_randomArray(numRands);
 		}
 		counter++;
 	}
 
-	/* If we never built an array, bad formatting */
-	if(!generated) {
+	/* If we have a valid filename */
+	if(filename != NULL) {
+		switch(args->dataType) {
+			case MLONG:
+				args->array = merge_extractLongArray(filename);
+				break;
+			case MLONGLONG:
+				args->array = merge_extractLongLongArray(filename);
+				break;
+			case MFLOAT:
+				args->array = merge_extractFloatArray(filename);
+				break;
+			case MDOUBLE:
+				args->array = merge_extractDoubleArray(filename);
+				break;
+			default:
+				fprintf(stderr, "This error should never happen, bigger problems if it did.\n");
+				return -1;
+		}
+	/* Else check if we parsed for random array */
+	} else if(numRands != 0) {
+		switch(args->dataType) {
+			case MLONG:
+				args->array = merge_randomLongs(numRands);
+				break;
+			case MLONGLONG:
+				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS
+				fprintf(stderr, "Can't generate random long long array yet.\n");
+				return -1;
+			case MFLOAT:
+				args->array = merge_randomFloats(numRands);
+				break;
+			case MDOUBLE:
+				args->array = merge_randomDoubles(numRands);
+				break;	
+			default:
+				fprintf(stderr, "This error should never happen, bigger problems if it did.\n");
+				return -1;
+		}	
+	} else {
+		/* If we never built an array, bad formatting */
 		fprintf(stderr, "Must generate an array by either giving size or file\n");
 		return -1;
 	}
