@@ -156,18 +156,12 @@ unsigned long merge_parseUnsignedLong(char *source) {
 		/* Covert parse into its true digit value */
 		parse -= '0';
 
-		/* If we are bordering on overflow */
-		if(++counter >= 10) {
-			if(counter > 10) {
-				fprintf(stderr, "Given long has too many digits, exceeds %lu",
-					ULONG_MAX);
-				return 0;
-			}
-			if(result * 10 + parse > ULONG_MAX) {
-				fprintf(stderr, "Given long overflows a 10 digit ulong\n");
-				return 0;
-			}	
-		}
+
+		if(++counter >= 10 && result * 10 + parse > ULONG_MAX) {
+			fprintf(stderr, "Given input %s overflows unsigned long %lu\n",
+				source, ULONG_MAX);
+			return 0;
+		}	
 		
 		result *= 10;
 		result += parse;
