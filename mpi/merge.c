@@ -10,29 +10,14 @@
 const unsigned short merge_maxThreads = 128;
 
 void * merge(mergeParas *args) {
-	int id, nprocs;
+	int id;
 	MPI_Init(NULL, NULL);
 	MPI_Comm_rank(MPI_COMM_WORLD, &id);
-	MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+	/* I guess we ignore the nprocs arg? */
+	MPI_Comm_size(MPI_COMM_WORLD, &args->numThreads);
 
 	//@todo IMPLEMENT SORT
 
 	MPI_Finalize();
 	return array;
-}
-
-int main(int argc, char *argv[]) {
-	mergeParas args;
-	/* If our arguements parsing fails, we print help */
-	if(parseArgs(&args, argc, argv))
-		merge_helpExit(argv[0]);
-
-	double start = MPI_Wtime();
-	void *merged = merge(&args);
-	
-	printf("Merge took %f seconds\n", MPI_Wtime() - start);
-	free(args.array);
-	free(merged);
-
-	exit(EXIT_SUCCESS);
 }

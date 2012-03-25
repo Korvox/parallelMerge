@@ -2,8 +2,8 @@
  * @author Matthew Scheirer
  * @license GPL v3 */
 
-#include "/parsing/parsing.h"
-#include "/serialSort/serialSort.h"
+#include "parsing/parsing.h"
+#include "serialSort/serialSort.h"
 
 /* This must be compiled with an included paralell sorter,
  * or it will fail to build */
@@ -18,9 +18,10 @@ int main(int argc, char *argv[]) {
 	if(parseArgs(&args, argc, argv))
 		merge_helpExit(argv[0]);
 
+	srand(123456789);
 	float start = time(NULL);
 
-	void *merged = merge(&args &serialSort);
+	void *merged = merge(&args, &serialSort);
 
 	printf("Merge took %f seconds\n", time(NULL) - start);
 	free(args.array);

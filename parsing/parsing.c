@@ -135,8 +135,189 @@ void merge_extractArray(char *fileName, mergeParas *paras) {
 		}
 	} else {
 		/* Else parse longs or long longs */
-		if( //@todo FINISH THIS
 	}
+}
+
+long * merge_extractLongArray(char *filename) {
+	FILE *data = fopen(filename, 'r');
+
+	/* If file failed to open, exit with file error */
+	if(data == NULL)
+		merge_fileErrorExit(data);
+
+	unsigned char parse,
+		numDigits,
+		sign = 0;
+	unsigned long counter = 0,
+		length = 127;
+	long *array = malloc(sizeof(long) * length);
+
+	while((parse = fgetc(data)) != EOF) {
+		switch(parse) {
+			/* If parse is a sign */
+			case '+':
+			case '-':
+				if(numDigits > 0) {
+					fprintf(stderr, "Numeric sign miday in a number\n");
+					merge_fileErrorExit(data);
+				}
+				if(sign != 0) {
+					fprintf(stderr, "Can only have one sign per number\n");
+					merge_fileErrorExit(data);
+				}
+				sign = parse;
+				break;
+			/* If parse is a spacing char */
+			case ' ':
+			case '\t':
+			case '\n':
+				/* numdigits > 0 allows trailing whitespace to not increment counter */
+				if(numDigits > 0) {
+					if(++counter == merge_maxArray) {
+						fprintf(stderr, "Too many numbers to parse in file\n");
+						merge_fileErrorExit(data);
+					}
+					/* Dynamic memory resizer */
+					if(counter == length) {
+						if(length << 1 > ULONG_MAX) {
+							fprintf(stderr,
+								"Attempted to resize array longer than ulong max %lu\n",
+								ULONG_MAX);
+							merge_fileErrorExit(data);
+						}
+						realloc(array, length * sizeof(long));
+					}
+					numDigits = 0;
+					parsedVal = 0;
+					sign = 0;
+				}
+				break;
+			/* Try to parse a digit, or if an invalid char escape */
+			default:
+				if(parse < '0' || parse > '9') {
+					fprintf(stderr, "Invalid character in file: %c", parse);
+					merge_fileErrorExit(data);
+				}
+				
+				parse -= '0';
+				
+				if(numDigits++ == 0) {
+					if(parse == 0) {
+						fprintf(stderr, "Values in file can not have leading zeroes\n");
+						merge_fileErrorExit(data);
+					}
+					parsedVal = parse;
+					if(sign = '-')
+						parsedVal *= -1;
+				}
+				else if(numDigits >= 10 && parsedVal * 10 + parse > LONG_MAX) {
+					fprintf(stderr, "Value in file overflows long %lu\n", LONG_MAX);
+					merge_fileErrorExit(data);
+				}
+
+				parsedVal *= 10;
+				parsedVal += parse;
+		}
+	}
+
+	/* Resize the array back down to the actual size */
+	realloc(array, sizeof(long) * counter);
+	return array;
+}
+
+long long * merge_extractLongLongArray(char *filename) {
+	FILE *data = fopen(filename, 'r');
+
+	/* If file failed to open, exit with file error */
+	if(data == NULL)
+		merge_fileErrorExit(data);
+
+	unsigned char parse,
+		numDigits,
+		sign = 0;
+	unsigned long counter = 0,
+		length = 63;
+	long long *array = malloc(sizeof(long long) * length);
+
+	while((parse = fgetc(data)) != EOF) {
+		switch(parse) {
+			/* If parse is a sign */
+			case '+':
+			case '-':
+				if(numDigits > 0) {
+					fprintf(stderr, "Numeric sign miday in a number\n");
+					merge_fileErrorExit(data);
+				}
+				if(sign != 0) {
+					fprintf(stderr, "Can only have one sign per number\n");
+					merge_fileErrorExit(data);
+				}
+				sign = parse;
+				break;
+			/* If parse is a spacing char */
+			case ' ':
+			case '\t':
+			case '\n':
+				/* numdigits > 0 allows trailing whitespace to not increment counter */
+				if(numDigits > 0) {
+					if(++counter == merge_maxArray) {
+						fprintf(stderr, "Too many numbers to parse in file\n");
+						merge_fileErrorExit(data);
+					}
+					/* Dynamic memory resizer */
+					if(counter == length) {
+						if(length << 1 > ULONGLONG_MAX) {
+							fprintf(stderr,
+								"Attempted to resize array longer than ULONGLONG max %lu\n",
+								ULONGLONG_MAX);
+							merge_fileErrorExit(data);
+						}
+						realloc(array, length * sizeof(long long));
+					}
+					numDigits = 0;
+					parsedVal = 0;
+					sign = 0;
+				}
+				break;
+			/* Try to parse a digit, or if an invalid char escape */
+			default:
+				if(parse < '0' || parse > '9') {
+					fprintf(stderr, "Invalid character in file: %c", parse);
+					merge_fileErrorExit(data);
+				}
+				
+				parse -= '0';
+				
+				if(numDigits++ == 0) {
+					if(parse == 0) {
+						fprintf(stderr, "Values in file can not have leading zeroes\n");
+						merge_fileErrorExit(data);
+					}
+					parsedVal = parse;
+					if(sign = '-')
+						parsedVal *= -1;
+				}
+				else if(numDigits >= 10 && parsedVal * 10 + parse > LONGLONG_MAX) {
+					fprintf(stderr, "Value in file overflows long %lu\n", LONGLONG_MAX);
+					merge_fileErrorExit(data);
+				}
+
+				parsedVal *= 10;
+				parsedVal += parse;
+		}
+	}
+
+	/* Resize the array back down to the actual size */
+	realloc(array, sizeof(long long) * counter);
+	return array;
+}
+
+float * merge_extractFloatArray(char *filename) {
+
+}
+
+double * merge_extractDoubleArray(char *filename) {
+
 }
 
 /* Replacement for atoi to parse an unsigned long length

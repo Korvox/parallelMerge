@@ -13,7 +13,7 @@
 
 /* Max # element bound.  Consider this * size of container
  * for size of array */
-const unsigned short merge_maxArray = 65535
+const unsigned short merge_maxArray = USHRT_MAX;
 
 /* Max number of threads to be allowed
  * @depreciated ONE SIZE DOES NOT FIT ALL */
@@ -33,22 +33,16 @@ const unsigned short merge_maxArray = 65535
 #define MDOUBLE 3
 #endif
 
-/* Structure to contain necessary thread data
- * for parallel merging. */
-typedef struct merge_t {
-	void *start;
-	unsigned long length;
-	unsigned short size,
-		numThreads;
-} merge_t;
-
 /* Structure for the arguments processing */
+#ifndef MERGEPARAS
+#define MERGEPARAS
 typedef struct mergeParas {
 	unsigned char dataType = 0;
 	unsigned long length,
 		numThreads = 1;
 	void *array;
 } mergeParas;
+#endif
 
 void merge_fileErrorExit(FILE*);
 void merge_helpExit(char*);
