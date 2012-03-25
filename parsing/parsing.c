@@ -158,7 +158,7 @@ long * merge_extractLongArray(char *filename) {
 			case '+':
 			case '-':
 				if(numDigits > 0) {
-					fprintf(stderr, "Numeric sign miday in a number\n");
+					fprintf(stderr, "Numeric sign midway in a number\n");
 					merge_fileErrorExit(data);
 				}
 				if(sign != 0) {
@@ -185,11 +185,10 @@ long * merge_extractLongArray(char *filename) {
 								ULONG_MAX);
 							merge_fileErrorExit(data);
 						}
+						length = length << 1;
 						realloc(array, length * sizeof(long));
 					}
-					numDigits = 0;
-					parsedVal = 0;
-					sign = 0;
+					numDigits = parsedVal = sign = 0;
 				}
 				break;
 			/* Try to parse a digit, or if an invalid char escape */
@@ -209,14 +208,15 @@ long * merge_extractLongArray(char *filename) {
 					parsedVal = parse;
 					if(sign = '-')
 						parsedVal *= -1;
-				}
-				else if(numDigits >= 10 && parsedVal * 10 + parse > LONG_MAX) {
-					fprintf(stderr, "Value in file overflows long %lu\n", LONG_MAX);
-					merge_fileErrorExit(data);
-				}
+				} else {
+					if(numDigits >= 10 && parsedVal * 10 + parse > LONG_MAX) {
+						fprintf(stderr, "Value in file overflows long %lu\n", LONG_MAX);
+						merge_fileErrorExit(data);
+					}
 
-				parsedVal *= 10;
-				parsedVal += parse;
+					parsedVal *= 10;
+					parsedVal += parse;
+				}
 		}
 	}
 
@@ -245,7 +245,7 @@ long long * merge_extractLongLongArray(char *filename) {
 			case '+':
 			case '-':
 				if(numDigits > 0) {
-					fprintf(stderr, "Numeric sign miday in a number\n");
+					fprintf(stderr, "Numeric sign midway in a number\n");
 					merge_fileErrorExit(data);
 				}
 				if(sign != 0) {
@@ -266,17 +266,16 @@ long long * merge_extractLongLongArray(char *filename) {
 					}
 					/* Dynamic memory resizer */
 					if(counter == length) {
-						if(length << 1 > ULONGLONG_MAX) {
+						if(length << 1 > ULONG_MAX) {
 							fprintf(stderr,
-								"Attempted to resize array longer than ULONGLONG max %lu\n",
-								ULONGLONG_MAX);
+								"Attempted to resize array longer than ULONG max %lu\n",
+								ULONG_MAX);
 							merge_fileErrorExit(data);
 						}
+						length = length << 1;
 						realloc(array, length * sizeof(long long));
 					}
-					numDigits = 0;
-					parsedVal = 0;
-					sign = 0;
+					numDigits = parsedVal = sign = 0;
 				}
 				break;
 			/* Try to parse a digit, or if an invalid char escape */
@@ -296,14 +295,14 @@ long long * merge_extractLongLongArray(char *filename) {
 					parsedVal = parse;
 					if(sign = '-')
 						parsedVal *= -1;
+				} else {
+					if(numDigits >= 10 && parsedVal * 10 + parse > LONGLONG_MAX) {
+						fprintf(stderr, "Value in file overflows long %lu\n", LONGLONG_MAX);
+						merge_fileErrorExit(data);
+					}
+					parsedVal *= 10;
+					parsedVal += parse;
 				}
-				else if(numDigits >= 10 && parsedVal * 10 + parse > LONGLONG_MAX) {
-					fprintf(stderr, "Value in file overflows long %lu\n", LONGLONG_MAX);
-					merge_fileErrorExit(data);
-				}
-
-				parsedVal *= 10;
-				parsedVal += parse;
 		}
 	}
 
@@ -313,11 +312,175 @@ long long * merge_extractLongLongArray(char *filename) {
 }
 
 float * merge_extractFloatArray(char *filename) {
+	FILE *data = fopen(filename, 'r');
 
+	/* If file failed to open, exit with file error */
+	if(data == NULL)
+		merge_fileErrorExit(data);
+
+	unsigned char parse,
+		sign = 0,
+		decimal = 0,
+		parsed[255],
+		numParsed = 0;
+	unsigned long counter = 0,
+		length = 63;
+	float *array = malloc(sizeof(float) * length);
+
+	while((parse = fgetc(data)) != EOF) {
+		switch(parse) {
+			/* If parse is a sign */
+			case '+':
+			case '-':
+				if(numParsed > 0) {
+					fprintf(stderr, "Numeric sign midway in a number\n");
+					merge_fileErrorExit(data);
+				}
+				if(sign != 0) {
+					fprintf(stderr, "Can only have one sign per number\n");
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse;
+				break;
+			/* If parse is a decimal point */
+			case '.':
+				if(decimal++ > 0) {
+					fprintf(stderr, "Multiple decimal points in single number\n");
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse;
+				break;
+			/* If parse is a spacing char */
+			case ' ':
+			case '\t':
+			case '\n':
+				/* numdigits > 0 allows trailing whitespace to not increment counter */
+				if(numParsed > 0) {
+					if(counter == merge_maxArray) {
+						fprintf(stderr, "Too many numbers to parse in file\n");
+						merge_fileErrorExit(data);
+					}
+					/* Dynamic memory resizer */
+					if(counter == length) {
+						if(length << 1 > ULONG_MAX) {
+							fprintf(stderr,
+								"Attempted to resize array longer than ULONG max %lu\n",
+								ULONG_MAX);
+							merge_fileErrorExit(data);
+						}
+						length = length << 1;
+						realloc(array, length * sizeof(float));
+					}
+					if(numParsed > MPARSEFLOATMAX) {
+						fprintf(stderr, "Attempted to parse a float of more than %d chars\n",
+							MPARSEFLOATMAX);
+						merge_fileErrorExit(data);
+					}
+					parsed[numParsed] = '\0';
+					array[counter++] = strtof((const char *)&parsed, NULL);
+					numParsed = sign = decimal = 0;
+				}
+				break;
+			/* Try to parse a digit, or if an invalid char escape */
+			default:
+				if(parse < '0' || parse > '9') {
+					fprintf(stderr, "Invalid character in file: %c", parse);
+					merge_fileErrorExit(data);
+				}
+				if(numParsed > MPARSEFLOATMAX) {
+					fprintf(stderr, "Attempted to parse a float of more than %d chars\n",
+						MPARSEFLOATMAX);
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse - '0';
+		}
+	}
 }
 
 double * merge_extractDoubleArray(char *filename) {
+	FILE *data = fopen(filename, 'r');
 
+	/* If file failed to open, exit with file error */
+	if(data == NULL)
+		merge_fileErrorExit(data);
+
+	unsigned char parse,
+		sign = 0,
+		decimal = 0,
+		parsed[255],
+		numParsed = 0;
+	unsigned long counter = 0,
+		length = 63;
+	double *array = malloc(sizeof(double) * length);
+
+	while((parse = fgetc(data)) != EOF) {
+		switch(parse) {
+			/* If parse is a sign */
+			case '+':
+			case '-':
+				if(numParsed > 0) {
+					fprintf(stderr, "Numeric sign midway in a number\n");
+					merge_fileErrorExit(data);
+				}
+				if(sign != 0) {
+					fprintf(stderr, "Can only have one sign per number\n");
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse;
+				break;
+			/* If parse is a decimal point */
+			case '.':
+				if(decimal++ > 0) {
+					fprintf(stderr, "Multiple decimal points in single number\n");
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse;
+				break;
+			/* If parse is a spacing char */
+			case ' ':
+			case '\t':
+			case '\n':
+				/* numdigits > 0 allows trailing whitespace to not increment counter */
+				if(numParsed > 0) {
+					if(counter == merge_maxArray) {
+						fprintf(stderr, "Too many numbers to parse in file\n");
+						merge_fileErrorExit(data);
+					}
+					/* Dynamic memory resizer */
+					if(counter == length) {
+						if(length << 1 > ULONG_MAX) {
+							fprintf(stderr,
+								"Attempted to resize array longer than ULONG max %lu\n",
+								ULONG_MAX);
+							merge_fileErrorExit(data);
+						}
+						length = length << 1;
+						realloc(array, length * sizeof(double));
+					}
+					if(numParsed > MPARSEdoubleMAX) {
+						fprintf(stderr, "Attempted to parse a double of more than %d chars\n",
+							MPARSEdoubleMAX);
+						merge_fileErrorExit(data);
+					}
+					parsed[numParsed] = '\0';
+					array[counter++] = strtod((const char *)&parsed, NULL);
+					numParsed = sign = decimal = 0;
+				}
+				break;
+			/* Try to parse a digit, or if an invalid char escape */
+			default:
+				if(parse < '0' || parse > '9') {
+					fprintf(stderr, "Invalid character in file: %c", parse);
+					merge_fileErrorExit(data);
+				}
+				if(numParsed > MPARSEdoubleMAX) {
+					fprintf(stderr, "Attempted to parse a double of more than %d chars\n",
+						MPARSEdoubleMAX);
+					merge_fileErrorExit(data);
+				}
+				parsed[numParsed++] = parse - '0';
+		}
+	}
 }
 
 /* Replacement for atoi to parse an unsigned long length
@@ -502,7 +665,8 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				args->array = merge_randomLongs(numRands);
 				break;
 			case MLONGLONG:
-				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS
+				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS \
+					WILL REQUIRE COPY / PASTE OF LEHMER RNG
 				fprintf(stderr, "Can't generate random long long array yet.\n");
 				return -1;
 			case MFLOAT:

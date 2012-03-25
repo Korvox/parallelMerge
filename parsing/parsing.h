@@ -33,6 +33,9 @@ const unsigned short merge_maxArray = USHRT_MAX;
 #define MDOUBLE 3
 #endif
 
+/* Max digits allowed to be parsed from a float or double */
+#define MPARSEFLOATMAX 255
+
 /* Structure for the arguments processing */
 #ifndef MERGEPARAS
 #define MERGEPARAS
