@@ -5,8 +5,10 @@
 #include "parsing/parsing.h"
 #include "serialSort/serialSort.h"
 
-/* This must be compiled with an included paralell sorter,
- * or it will fail to build */
+/* -------------------WARNING------------------
+ * This must be compiled with an included paralell sorter,
+ * or it will fail to build.  And it must be defined before
+ * this file is compiled. */
 
 #include <stdio.h>
 #include <time.h>
