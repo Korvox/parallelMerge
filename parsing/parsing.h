@@ -13,11 +13,10 @@
 
 /* Max # element bound.  Consider this * size of container
  * for size of array */
-const unsigned short merge_maxArray = USHRT_MAX;
+#define MERGE_MAXARRAY 8192
 
-/* Max number of threads to be allowed
- * @depreciated ONE SIZE DOES NOT FIT ALL */
-//const unsigned short merge_maxThreads = 8192
+/* Max digits allowed to be parsed from a float or double */
+#define MPARSEFLOATMAX 255
 
 /* These macros are used to denote the type of elements in array */
 #ifndef MLONG
@@ -32,9 +31,6 @@ const unsigned short merge_maxArray = USHRT_MAX;
 #ifndef MDOUBLE
 #define MDOUBLE 3
 #endif
-
-/* Max digits allowed to be parsed from a float or double */
-#define MPARSEFLOATMAX 255
 
 /* Structure for the arguments processing */
 #ifndef MERGEPARAS

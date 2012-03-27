@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
-#include "serialSort/serialSort.h"
 #include "parsing/parsing.h"
+#include "serial/serial.h"
 
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	unsigned long numRands = merge_parseUnsignedLong(argv[1]);
-	if(numrands == 0) {
+	if(numRands == 0) {
 		fprintf(stderr, "Parsing error on numRands");
 		exit(EXIT_FAILURE);
 	}

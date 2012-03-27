@@ -9,7 +9,7 @@
 
 void * serialSort(void *start,  unsigned long length, unsigned char type) {
 	switch(type) {
-		case MLONG:
+		case MLONG: {
 			long *array = (long*) start;
 			
 			/* Base case */
@@ -31,18 +31,18 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 			/* While our counters are not both at the end of the list */
 			while(frontCounter + secondCounter < length) {
-				if(firstCounter = pieceLength ||
+				if(frontCounter == pieceLength ||
 					second[secondCounter] < first[frontCounter])
 						results[globalCounter++] = second[secondCounter++];
 				else
-					results[globalCounter++] = first[firstCounter++];
+					results[globalCounter++] = first[frontCounter++];
 			}
 
 			free(first);
 			free(second);
 			return (void*)results;
-			
-		case MLONGLONG:
+		}	
+		case MLONGLONG: {
 			long long *array = (long long*) start;
 			
 			/* Base case */
@@ -64,18 +64,18 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 			/* While our counters are not both at the end of the list */
 			while(frontCounter + secondCounter < length) {
-				if(firstCounter = pieceLength ||
+				if(frontCounter == pieceLength ||
 					second[secondCounter] < first[frontCounter])
 						results[globalCounter++] = second[secondCounter++];
 				else
-					results[globalCounter++] = first[firstCounter++];
+					results[globalCounter++] = first[frontCounter++];
 			}
 
 			free(first);
 			free(second);
 			return (void*)results;
-
-		case MFLOAT:
+		}
+		case MFLOAT: {
 			float *array = (float*) start;
 			
 			/* Base case */
@@ -97,18 +97,18 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 			/* While our counters are not both at the end of the list */
 			while(frontCounter + secondCounter < length) {
-				if(firstCounter = pieceLength ||
+				if(frontCounter == pieceLength ||
 					second[secondCounter] < first[frontCounter])
 						results[globalCounter++] = second[secondCounter++];
 				else
-					results[globalCounter++] = first[firstCounter++];
+					results[globalCounter++] = first[frontCounter++];
 			}
 
 			free(first);
 			free(second);
 			return (void*)results;
-
-		case MDOUBLE:
+		}
+		case MDOUBLE: {
 			double *array = (double*) start;
 			
 			/* Base case */
@@ -130,15 +130,20 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 			/* While our counters are not both at the end of the list */
 			while(frontCounter + secondCounter < length) {
-				if(firstCounter = pieceLength ||
+				if(frontCounter == pieceLength ||
 					second[secondCounter] < first[frontCounter])
 						results[globalCounter++] = second[secondCounter++];
 				else
-					results[globalCounter++] = first[firstCounter++];
+					results[globalCounter++] = first[frontCounter++];
 			}
 
 			free(first);
 			free(second);
 			return (void*)results;
+		}
+		/* If the type is invalid return null */
+		default:
+			return NULL;
 	}
+
 }

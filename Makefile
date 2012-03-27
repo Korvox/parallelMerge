@@ -35,7 +35,7 @@ cudac: $(iosrcs) $(smsrcs) $(cudasrcs)
 serialc: $(iosrcs) $(serialsrcs)
 	gcc $(serialcflags) $(iosrcs) $(serialsrcs) serialTesting.c
 
-$(serialprog): $(seriallflags) $(serialobjs) 
+$(serialprog): $(ioobjs) $(serialobjs) serialTesting.o
 	gcc $(seriallflags) $(serialobjs) $(ioobjs) serialTesting.o
 
 serialtest: $(serialprog)

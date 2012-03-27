@@ -68,7 +68,7 @@ long * merge_extractLongArray(char *filename) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numDigits > 0) {
-					if(++counter == merge_maxArray) {
+					if(++counter == MERGE_MAXARRAY) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
 						merge_fileErrorExit(data);
 					}
@@ -156,7 +156,7 @@ long long * merge_extractLongLongArray(char *filename) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numDigits > 0) {
-					if(++counter == merge_maxArray) {
+					if(++counter == MERGE_MAXARRAY) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
 						merge_fileErrorExit(data);
 					}
@@ -252,7 +252,7 @@ float * merge_extractFloatArray(char *filename) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numParsed > 0) {
-					if(counter == merge_maxArray) {
+					if(counter == MERGE_MAXARRAY) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
 						merge_fileErrorExit(data);
 					}
@@ -338,7 +338,7 @@ double * merge_extractDoubleArray(char *filename) {
 			case '\n':
 				/* numdigits > 0 allows trailing whitespace to not increment counter */
 				if(numParsed > 0) {
-					if(counter == merge_maxArray) {
+					if(counter == MERGE_MAXARRAY) {
 						fprintf(stderr, "Too many numbers to parse in file\n");
 						merge_fileErrorExit(data);
 					}
@@ -353,9 +353,9 @@ double * merge_extractDoubleArray(char *filename) {
 						length = length << 1;
 						realloc(array, length * sizeof(double));
 					}
-					if(numParsed > MPARSEdoubleMAX) {
+					if(numParsed > MPARSEFLOATMAX) {
 						fprintf(stderr, "Attempted to parse a double of more than %d chars\n",
-							MPARSEdoubleMAX);
+							MPARSEFLOATMAX);
 						merge_fileErrorExit(data);
 					}
 					parsed[numParsed] = '\0';
@@ -369,9 +369,9 @@ double * merge_extractDoubleArray(char *filename) {
 					fprintf(stderr, "Invalid character in file: %c", parse);
 					merge_fileErrorExit(data);
 				}
-				if(numParsed > MPARSEdoubleMAX) {
+				if(numParsed > MPARSEFLOATMAX) {
 					fprintf(stderr, "Attempted to parse a double of more than %d chars\n",
-						MPARSEdoubleMAX);
+						MPARSEFLOATMAX);
 					merge_fileErrorExit(data);
 				}
 				parsed[numParsed++] = parse - '0';
@@ -386,7 +386,7 @@ unsigned long merge_parseUnsignedLong(char *source) {
 	unsigned char parse,
 		counter = 0;
 
-	while(parse = source[counter]) != '\0') {
+	while((parse = source[counter]) != '\0') {
 		/* If we have an invalid char anywhere */
 		if(parse < '0' || parse > '9') {
 			fprintf(stderr, "Invlaid char in parsed long %c\n", parse);
@@ -412,23 +412,23 @@ unsigned long merge_parseUnsignedLong(char *source) {
 long * merge_randomLongs(unsigned long length) {
 	long *array = malloc(length * sizeof(long));
 	for(length--; length >= 0; length--)
-		array[counter] = rand();
+		array[length] = rand();
 	return array;
 }
 
 /* Generate a random array of floats of length length */
 float * merge_randomFloats(unsigned long length) {
-	float *arrray = malloc(length * sizeof(float));
+	float *array = malloc(length * sizeof(float));
 	for(length--; length >= 0; length--)
-		array[counter] = (float)rand() / rand()
+		array[length] = (float)rand() / rand();
 	return array;
 }
 
 /* Generate a random array of doubles of length length */
 double * merge_randomDoubles(unsigned long length) {
-	double *arrray = malloc(length * sizeof(double));
+	double *array = malloc(length * sizeof(double));
 	for(length--; length >= 0; length--)
-		array[counter] = (double)rand() / rand()
+		array[length] = (double)rand() / rand();
 	return array;
 }
 
@@ -440,8 +440,8 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 		return -1;
 
 	int counter = 1;
-	unsigned char typed = 0,
-		*filename = NULL;
+	unsigned char typed = 0;
+	char *filename = NULL;
 	unsigned long numRands = 0;
 
 	while(counter < argc) {
@@ -482,8 +482,10 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 					filename = argv[++counter];
 					break;
 					
-				/* We are to specify the number of threads to run */
-				case 'n':
+				/* We are to specify the number of threads to run.  Interestingly, GCC
+				 * won't compile case statements if they declare variables and are not
+				 * wrapped in braces. */
+				case 'n': {
 					unsigned long numThreads = merge_parseUnsignedLong(argv[++counter]);
 					/* This happens if you use bad formatting */
 					if(numThreads <= 0) {
@@ -497,7 +499,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 						return -1;
 					} */
 					args->numThreads = numThreads;
-					break;
+					} break;
 
 				/* h case means we probably have help, but even
 				 * if we have formatting error, we exit the same way */
@@ -536,8 +538,8 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	 * the file is assumed to hold valid longs. */
 	if(filename != NULL) {
 		switch(args->dataType) {
-			//@ todo convert file parser into seperate methods for each data type \
-				also wtb templates in c, holy shit this duplication is gay
+			/*@ todo convert file parser into seperate methods for each data type
+			 * also wtb templates in c, holy shit this duplication is gay */
 			case MLONG:
 				args->array = merge_extractLongArray(filename);
 				break;
@@ -561,8 +563,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				args->array = merge_randomLongs(numRands);
 				break;
 			case MLONGLONG:
-				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS \
-					WILL REQUIRE COPY / PASTE OF LEHMER RNG
+				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS WILL REQUIRE COPY / PASTE OF LEHMER RNG
 				fprintf(stderr, "Can't generate random long long array yet.\n");
 				return -1;
 			case MFLOAT:
