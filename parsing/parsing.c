@@ -40,7 +40,7 @@ long * merge_extractLongArray(char *filename) {
 		merge_fileErrorExit(data);
 
 	unsigned char parse,
-		numDigits,
+		numDigits = 0,
 		sign = 0;
 	unsigned long counter = 0,
 		length = 127;
@@ -128,7 +128,7 @@ long long * merge_extractLongLongArray(char *filename) {
 		merge_fileErrorExit(data);
 
 	unsigned char parse,
-		numDigits,
+		numDigits = 0,
 		sign = 0;
 	unsigned long counter = 0,
 		length = 63;
@@ -411,24 +411,32 @@ unsigned long merge_parseUnsignedLong(char *source) {
 /* Generate a random array of longs of length length*/
 long * merge_randomLongs(unsigned long length) {
 	long *array = malloc(length * sizeof(long));
-	for(length--; length >= 0; length--)
-		array[length] = rand();
+	while(length > 0)
+		array[--length] = rand();
+	return array;
+}
+
+/* Generate a random array of long longs of length length*/
+long long * merge_randomLongLongs(unsigned long length) {
+	long long *array = malloc(length * sizeof(long long));
+	while(length > 0)
+		array[--length] = rand() * rand();
 	return array;
 }
 
 /* Generate a random array of floats of length length */
 float * merge_randomFloats(unsigned long length) {
 	float *array = malloc(length * sizeof(float));
-	for(length--; length >= 0; length--)
-		array[length] = (float)rand() / rand();
+	while(length > 0)
+		array[--length] = (float)rand() / rand();
 	return array;
 }
 
 /* Generate a random array of doubles of length length */
 double * merge_randomDoubles(unsigned long length) {
 	double *array = malloc(length * sizeof(double));
-	for(length--; length >= 0; length--)
-		array[length] = (double)rand() / rand();
+	while(length > 0)
+		array[--length] = (double)rand() / rand();
 	return array;
 }
 

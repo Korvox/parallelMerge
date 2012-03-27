@@ -52,7 +52,9 @@ float * merge_extractFloatArray(char*);
 double * merge_extractDoubleArray(char*);
 
 unsigned long merge_parseUnsignedLong(char*);
+
 long * merge_randomLongs(unsigned long);
+long long * merge_randomLongLongs(unsigned long);
 float * merge_randomFloats(unsigned long);
 double * merge_randomDoubles(unsigned long);
 

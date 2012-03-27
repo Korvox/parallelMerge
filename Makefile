@@ -16,7 +16,7 @@ cudaprog = cuda/merge
 
 serialprog = serial
 serialcflags = -c -Wall -std=c1x
-seriallflags = -o $(serialprog)
+serialflags = -o $(serialprog)
 serialsrcs = serial/serial.c
 serialobjs = $(serialsrcs:.c=.o)
 
@@ -32,15 +32,16 @@ mpic: $(iosrcs) $(smsrcs) $(mpisrcs)
 
 cudac: $(iosrcs) $(smsrcs) $(cudasrcs)
 
-serialc: $(iosrcs) $(serialsrcs)
-	gcc $(serialcflags) $(iosrcs) $(serialsrcs) serialTesting.c
+	#gcc $(serialcflags) $(iosrcs) $(serialsrcs) serialTesting.c
+serialc: $(iosrcs) $(serialsrcs) serialTesting.c
+	gcc -o serial -Wall -std=c1x -O2 $(iosrcs) $(serialsrcs) serialTesting.c
 
 $(serialprog): $(ioobjs) $(serialobjs) serialTesting.o
-	gcc $(seriallflags) $(serialobjs) $(ioobjs) serialTesting.o
+	gcc $(serialflags) $(serialobjs) $(ioobjs) serialTesting.o
 
 serialtest: $(serialprog)
 	./$(serialprog) 1024
 	
 .PHONY: clean
 clean:
-	rm $(rmflags) $(ptprog) $(mpiprog) $(cudaprog) $(serialprog) $(ioprog)
+	rm $(rmflags) *.o parsing/*.o serial/*.o mpi/*.o pthreads/*.o cuda/*.o
