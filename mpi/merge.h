@@ -26,7 +26,7 @@
 /* Structure for the arguments processing */
 #ifndef MERGEPARAS
 #define MERGEPARAS
-typedef struct mergeParas {
+typedef struct {
 	unsigned char dataType = 0;
 	unsigned long length,
 		numThreads = 1;

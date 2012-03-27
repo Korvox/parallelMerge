@@ -27,7 +27,7 @@ const unsigned short merge_maxArray = USHRT_MAX;
 #define MLONGLONG 1
 #endif
 #ifndef MFLOAT
-#DEFINE MFLOAT 2
+#define MFLOAT 2
 #endif
 #ifndef MDOUBLE
 #define MDOUBLE 3
@@ -39,10 +39,10 @@ const unsigned short merge_maxArray = USHRT_MAX;
 /* Structure for the arguments processing */
 #ifndef MERGEPARAS
 #define MERGEPARAS
-typedef struct mergeParas {
-	unsigned char dataType = 0;
+typedef struct {
+	unsigned char dataType;
 	unsigned long length,
-		numThreads = 1;
+		numThreads;
 	void *array;
 } mergeParas;
 #endif
@@ -50,9 +50,16 @@ typedef struct mergeParas {
 void merge_fileErrorExit(FILE*);
 void merge_helpExit(char*);
 
-void merge_extractArray(char*, mergeParas*);
+long * merge_extractLongArray(char*);
+long long * merge_extractLongLongArray(char*);
+float * merge_extractFloatArray(char*);
+double * merge_extractDoubleArray(char*);
+
 unsigned long merge_parseUnsignedLong(char*);
-int * merge_randomArray(unsigned long);
+long * merge_randomLongs(unsigned long);
+float * merge_randomFloats(unsigned long);
+double * merge_randomDoubles(unsigned long);
+
 signed char merge_parseArgs(mergeParas*, int, char**);
 
 #endif

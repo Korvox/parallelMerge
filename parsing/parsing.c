@@ -14,7 +14,7 @@ void merge_fileErrorExit(FILE *toClose) {
 			\t1. Must contain only numbers, can have decimal places and signs\n\
 			\t2. Numbers can be followed by tab, space, or new line\n\
 			\t3. File must end with EOF\n");
-	exit(EXIT_SUCCESS);
+	exit(EXIT_FAILURE);
 }
 
 /* This error prints the usage of merge */
@@ -29,117 +29,11 @@ void merge_helpExit(char *callingName) {
 		\t[listsize] required, number of elements to\n\
 		\t have in randomly generated array to sort\n",
 		callingName);
-	exit(EXIT_SUCCESS);
-}
-
-//@todo BREAK THIS UP into long, long long, float, and double file parsers. \
-	Assume correctness, if anything is wrong just file error exit.
-
-/* Given a file name to open, attempt to parse it into an array */
-void merge_extractArray(char *fileName, mergeParas *paras) {
-	FILE *data = fopen(filename, 'r');
-
-	/* If file failed to open, exit with file error */
-	if(data == NULL)
-		merge_fileErrorExit(data);
-
-	unsigned char parse,
-		floating = 0,
-		decimal = 0;
-		longestDigits = 0,
-		numDigits = 0,
-		checkDigit = 0;
-	unsigned long counter = 0;
-
-	/* We need to search for decimal points to determine if file values are
-	 * floating or not.  Also, check for file integrity, so we can directly parse
-	 * numbers in the event we don't have invalid chars.  We don't allow e or pi.*/
-	while((parse = fgetc(data)) != EOF) {
-		switch(parse) {
-			/* If parse is a sign */
-			case '+':
-			case '-':
-				if(numDigits > 0) {
-					fprintf(stderr, "Numeric sign miday in a number\n");
-					merge_fileErrorExit(data);
-				}
-				checkDigit = 1;
-				break;
-
-			/* If parse is a decimal point */
-			case '.':
-				if(decimal == 1) {
-					fprintf(stderr, "Multiple decimal points in single number\n");
-					merge_fileErrorExit(data);
-				}
-				floating = decimal = 1;
-				break;
-
-			/* If parse is a spacing char */
-			case ' ':
-			case '\t':
-			case '\n':
-				/* numdigits > 0 allows trailing whitespace to not increment counter */
-				if(numDigits > 0) {
-					if(++counter == merge_maxArray) {
-						fprintf(stderr, "Too many numbers to parse in file\n");
-						merge_fileErrorExit(data);
-					}
-
-					if(numDigits > longestDigits)
-						longestDigits = numDigits;
-					numDigits = 0;
-				}
-				break;
-
-			/* Try to parse a digit, or if an invalid char escape */
-			default:
-				if(parse < '0' || parse > '9') {
-					fprintf(stderr, "Invalid character in file: %c", parse);
-					merge_fileErrorExit(data);
-				}
-				numDigits++;
-				break;
-		}
-	}
-
-	/* We reset the file pointer back to the start */
-	rewind(data);
-
-	/* We either process the file as doubles or ints for the array */
-	if(floating) {
-		/* Set the paras size of elements */
-		paras->dataType = MDOUBLE;
-		/* We allocate exactly as many doubles as we will parse */
-		double *data = malloc(sizeof(double) * counter);
-
-		/* We can have a char buffer for reading in exactly as
-		 * large as the longest double we will parse*/
-		unsigned char[longestDigits + 2] parsedDouble,
-			charIndex = 0;
-		unsigned long arrayIndex = 0;
-		
-		while((parse = fgetc(data)) != EOF) {
-			/* This is why we checked file integrity, makes this part ezpz */
-			if(parse != 9 && parse != 10 && parse != 32)
-				parsedDouble[charIndex++] = parse;
-			/* We write the double into the array given we parsed something
-			 * otherwise we are just skipping trailing whitespace chars */
-			else if(charIndex > 0) {
-				parsedDouble[charIndex] = '\0';
-				data[arrayIndex++] = strtod(&parsedDouble, NULL);
-				charIndex = 0;
-			}
-
-		paras->array = data;
-		}
-	} else {
-		/* Else parse longs or long longs */
-	}
+	exit(EXIT_FAILURE);
 }
 
 long * merge_extractLongArray(char *filename) {
-	FILE *data = fopen(filename, 'r');
+	FILE *data = fopen(filename, "r");
 
 	/* If file failed to open, exit with file error */
 	if(data == NULL)
@@ -150,7 +44,8 @@ long * merge_extractLongArray(char *filename) {
 		sign = 0;
 	unsigned long counter = 0,
 		length = 127;
-	long *array = malloc(sizeof(long) * length);
+	long *array = malloc(sizeof(long) * length),
+		parsedVal = 0;
 
 	while((parse = fgetc(data)) != EOF) {
 		switch(parse) {
@@ -206,7 +101,7 @@ long * merge_extractLongArray(char *filename) {
 						merge_fileErrorExit(data);
 					}
 					parsedVal = parse;
-					if(sign = '-')
+					if(sign == '-')
 						parsedVal *= -1;
 				} else {
 					if(numDigits >= 10 && parsedVal * 10 + parse > LONG_MAX) {
@@ -226,7 +121,7 @@ long * merge_extractLongArray(char *filename) {
 }
 
 long long * merge_extractLongLongArray(char *filename) {
-	FILE *data = fopen(filename, 'r');
+	FILE *data = fopen(filename, "r");
 
 	/* If file failed to open, exit with file error */
 	if(data == NULL)
@@ -237,7 +132,8 @@ long long * merge_extractLongLongArray(char *filename) {
 		sign = 0;
 	unsigned long counter = 0,
 		length = 63;
-	long long *array = malloc(sizeof(long long) * length);
+	long long *array = malloc(sizeof(long long) * length),
+		parsedVal = 0;
 
 	while((parse = fgetc(data)) != EOF) {
 		switch(parse) {
@@ -293,11 +189,11 @@ long long * merge_extractLongLongArray(char *filename) {
 						merge_fileErrorExit(data);
 					}
 					parsedVal = parse;
-					if(sign = '-')
+					if(sign == '-')
 						parsedVal *= -1;
 				} else {
-					if(numDigits >= 10 && parsedVal * 10 + parse > LONGLONG_MAX) {
-						fprintf(stderr, "Value in file overflows long %lu\n", LONGLONG_MAX);
+					if(numDigits >= 10 && parsedVal * 10 + parse > LLONG_MAX) {
+						fprintf(stderr, "Value in file overflows long %lu\n", LLONG_MAX);
 						merge_fileErrorExit(data);
 					}
 					parsedVal *= 10;
@@ -312,7 +208,7 @@ long long * merge_extractLongLongArray(char *filename) {
 }
 
 float * merge_extractFloatArray(char *filename) {
-	FILE *data = fopen(filename, 'r');
+	FILE *data = fopen(filename, "r");
 
 	/* If file failed to open, exit with file error */
 	if(data == NULL)
@@ -398,7 +294,7 @@ float * merge_extractFloatArray(char *filename) {
 }
 
 double * merge_extractDoubleArray(char *filename) {
-	FILE *data = fopen(filename, 'r');
+	FILE *data = fopen(filename, "r");
 
 	/* If file failed to open, exit with file error */
 	if(data == NULL)
@@ -521,7 +417,7 @@ long * merge_randomLongs(unsigned long length) {
 }
 
 /* Generate a random array of floats of length length */
-float * merge_randomfloats(unsigned long length) {
+float * merge_randomFloats(unsigned long length) {
 	float *arrray = malloc(length * sizeof(float));
 	for(length--; length >= 0; length--)
 		array[counter] = (float)rand() / rand()

@@ -2,7 +2,7 @@
  * @author Matthew Scheirer
  * @license GPL v3 */
 
-#include "serialSort.h"
+#include "serial.h"
 
 /* This is the most god awful code duplication I have ever seen.  No functional
  * decomp, and I copy pasted shit 4 times. */

@@ -13,7 +13,7 @@
 #define MLONGLONG 1
 #endif
 #ifndef MFLOAT
-#DEFINE MFLOAT 2
+#define MFLOAT 2
 #endif
 #ifndef MDOUBLE
 #define MDOUBLE 3

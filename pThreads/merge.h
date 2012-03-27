@@ -9,7 +9,7 @@
 
 /* Structure to contain necessary thread data
  * for parallel merging. */
-typedef struct merge_t {
+typedef struct {
 	void *start;
 	unsigned long length;
 	unsigned short size,
