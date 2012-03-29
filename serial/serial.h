@@ -5,6 +5,7 @@
 #ifndef _SERIALSORTER_
 #define _SERIALSORTER_
 
+#include <stdio.h>
 #include <stdlib.h>
 
 /* These macros are used to denote the type of elements in array */

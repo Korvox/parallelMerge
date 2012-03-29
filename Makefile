@@ -24,6 +24,9 @@ rmflags = -f
 
 # pipe compiler errors to file w/ (make serialc 3>&1 1>&2- 2>&3-) > errors.txt
 
+serialc: $(iosrcs) $(serialsrcs) serialTesting.c
+	gcc -o serial -Wall -std=c1x -O2 $(iosrcs) $(serialsrcs) serialTesting.c
+	
 ptc: $(iosrcs) $(smsrcs) $(ptsrcs)
 	gcc $(ptargs) $(iosrcs) $(smsrcs) $(ptsrcs) $(ptprog)
 	
@@ -33,8 +36,6 @@ mpic: $(iosrcs) $(smsrcs) $(mpisrcs)
 cudac: $(iosrcs) $(smsrcs) $(cudasrcs)
 
 	#gcc $(serialcflags) $(iosrcs) $(serialsrcs) serialTesting.c
-serialc: $(iosrcs) $(serialsrcs) serialTesting.c
-	gcc -o serial -Wall -std=c1x -O2 $(iosrcs) $(serialsrcs) serialTesting.c
 
 $(serialprog): $(ioobjs) $(serialobjs) serialTesting.o
 	gcc $(serialflags) $(serialobjs) $(ioobjs) serialTesting.o

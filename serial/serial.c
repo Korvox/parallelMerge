@@ -10,6 +10,8 @@
 void * serialSort(void *start,  unsigned long length, unsigned char type) {
 	switch(type) {
 		case MLONG: {
+			//printf("Got into a long parse with length %lu and type %hhi\n",
+				//length, type);
 			long *array = (long*) start;
 			
 			/* Base case */
@@ -20,13 +22,12 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 			}
 		
 			unsigned long pieceLength = length / 2,
-				remainder = length % 2,
 				frontCounter = 0,
 				secondCounter = 0,
 				globalCounter = 0;
 			
 			long *first = (long*) serialSort((void*) start, pieceLength, type),
-				*second = serialSort((void*) start + pieceLength, pieceLength + remainder, type),
+				*second = serialSort((void*) start + pieceLength, pieceLength + length % 2, type),
 				*results = malloc(sizeof(long) * length);
 
 			/* While our counters are not both at the end of the list */
