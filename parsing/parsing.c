@@ -300,33 +300,49 @@ double * merge_extractDoubleArray(char *filename) {
 /* Generate a random array of ints of length length
  * WHY IS RAND_MAX ONLY SHORT_MAX? */
 int * merge_randomInts(unsigned long length) {
-	int *array = malloc(length * sizeof(int));
-	while(length > 0)
-		array[--length] = rand();
+	int *array = malloc(length * sizeof(int)),
+		seed = 1234567890;
+	while(length-- > 0)
+		array[length] = seed = lehmerRandom(seed);
 	return array;
 }
 
 /* Generate a random array of longs of length length*/
 long * merge_randomLongs(unsigned long length) {
 	long *array = malloc(length * sizeof(long));
-	while(length > 0)
-		array[--length] = rand() * rand();
+	int seed = 1234567890;
+	while(length-- > 0) {
+		seed = lehmerRandom(seed);
+		array[length] = seed;
+		seed = lehmerRandom(seed);
+		array[length] *= seed;
+	}
 	return array;
 }
 
 /* Generate a random array of floats of length length */
 float * merge_randomFloats(unsigned long length) {
 	float *array = malloc(length * sizeof(float));
-	while(length > 0)
-		array[--length] = (float)rand() / rand();
+	int seed = 1234567890;
+	while(length-- > 0) {
+		seed = lehmerRandom(seed);
+		array[length] = (float) seed;
+		seed = lehmerRandom(seed);
+		array[length] /= seed;
+	}
 	return array;
 }
 
 /* Generate a random array of doubles of length length */
 double * merge_randomDoubles(unsigned long length) {
 	double *array = malloc(length * sizeof(double));
-	while(length > 0)
-		array[--length] = (double)rand() / rand();
+	int seed = 1234567890;
+	while(length-- > 0) {
+		seed = lehmerRandom(seed);
+		array[length] = (float) seed;
+		seed = lehmerRandom(seed);
+		array[length] /= seed;
+	}
 	return array;
 }
 

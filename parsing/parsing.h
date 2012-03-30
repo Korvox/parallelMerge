@@ -11,6 +11,8 @@
 #include <string.h>
 #include <limits.h>
 
+#include "../rng/rng.h"
+
 /* Max # element bound.  Consider this * size of container
  * for size of array */
 #define MERGE_MAXARRAY 8192

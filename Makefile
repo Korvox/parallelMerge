@@ -20,12 +20,14 @@ serialflags = -o $(serialprog)
 serialsrcs = serial/serial.c
 serialobjs = $(serialsrcs:.c=.o)
 
+rngsrcs = rng/rng.c
+
 rmflags = -f
 
 # pipe compiler errors to file w/ (make serialc 3>&1 1>&2- 2>&3-) > errors.txt
 
-serialc: $(iosrcs) $(serialsrcs) serialTesting.c
-	gcc -o serial -Wall -std=c1x -O2 $(iosrcs) $(serialsrcs) serialTesting.c
+serialc: $(rngsrcs) $(iosrcs) $(serialsrcs) serialTesting.c
+	gcc -o serial -Wall -std=c1x -O2 -lm $(rngsrcs) $(iosrcs) $(serialsrcs) serialTesting.c
 	
 ptc: $(iosrcs) $(smsrcs) $(ptsrcs)
 	gcc $(ptargs) $(iosrcs) $(smsrcs) $(ptsrcs) $(ptprog)
