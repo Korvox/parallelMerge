@@ -9,6 +9,39 @@
 
 void * serialSort(void *start,  unsigned long length, unsigned char type) {
 	switch(type) {
+		case MINT: {
+			int *array = (int*) start;
+			
+			/* Base case */
+			if(length == 1) {
+				int *ret = malloc(sizeof(int));
+				*ret = *array;
+				return ret;
+			}
+		
+			unsigned long pieceLength = length / 2,
+				remainder = length % 2,
+				frontCounter = 0,
+				secondCounter = 0,
+				globalCounter = 0;
+			
+			int *first = (int*) serialSort((void*) start, pieceLength, type),
+				*second = serialSort((void*) start + pieceLength, pieceLength + remainder, type),
+				*results = malloc(sizeof(int) * length);
+
+			/* While our counters are not both at the end of the list */
+			while(frontCounter + secondCounter < length) {
+				if(frontCounter == pieceLength ||
+					second[secondCounter] < first[frontCounter])
+						results[globalCounter++] = second[secondCounter++];
+				else
+					results[globalCounter++] = first[frontCounter++];
+			}
+
+			free(first);
+			free(second);
+			return (void*) results;
+		}
 		case MLONG: {
 			//printf("Got into a long parse with length %lu and type %hhi\n",
 				//length, type);
@@ -41,41 +74,8 @@ void * serialSort(void *start,  unsigned long length, unsigned char type) {
 
 			free(first);
 			free(second);
-			return (void*)results;
+			return (void*) results;
 		}	
-		case MLONGLONG: {
-			long long *array = (long long*) start;
-			
-			/* Base case */
-			if(length == 1) {
-				long long *ret = malloc(sizeof(long long));
-				*ret = *array;
-				return ret;
-			}
-		
-			unsigned long pieceLength = length / 2,
-				remainder = length % 2,
-				frontCounter = 0,
-				secondCounter = 0,
-				globalCounter = 0;
-			
-			long long *first = (long long*) serialSort((void*) start, pieceLength, type),
-				*second = serialSort((void*) start + pieceLength, pieceLength + remainder, type),
-				*results = malloc(sizeof(long long) * length);
-
-			/* While our counters are not both at the end of the list */
-			while(frontCounter + secondCounter < length) {
-				if(frontCounter == pieceLength ||
-					second[secondCounter] < first[frontCounter])
-						results[globalCounter++] = second[secondCounter++];
-				else
-					results[globalCounter++] = first[frontCounter++];
-			}
-
-			free(first);
-			free(second);
-			return (void*)results;
-		}
 		case MFLOAT: {
 			float *array = (float*) start;
 			

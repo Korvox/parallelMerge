@@ -9,11 +9,11 @@
 #include <stdlib.h>
 
 /* These macros are used to denote the type of elements in array */
-#ifndef MLONG
-#define MLONG 0
+#ifndef MINT
+#define MINT 0
 #endif
-#ifndef MLONGLONG
-#define MLONGLONG 1
+#ifndef MLONG
+#define MLONG 1
 #endif
 #ifndef MFLOAT
 #define MFLOAT 2

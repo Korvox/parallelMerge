@@ -32,6 +32,11 @@ void merge_helpExit(char *callingName) {
 	exit(EXIT_FAILURE);
 }
 
+int * merge_extractIntArray(char *filename) {
+	//@TODO : copypasta from long array implementation
+	return NULL;
+}
+
 long * merge_extractLongArray(char *filename) {
 	FILE *data = fopen(filename, "r");
 
@@ -117,93 +122,6 @@ long * merge_extractLongArray(char *filename) {
 
 	/* Resize the array back down to the actual size */
 	realloc(array, sizeof(long) * counter);
-	return array;
-}
-
-long long * merge_extractLongLongArray(char *filename) {
-	FILE *data = fopen(filename, "r");
-
-	/* If file failed to open, exit with file error */
-	if(data == NULL)
-		merge_fileErrorExit(data);
-
-	unsigned char parse,
-		numDigits = 0,
-		sign = 0;
-	unsigned long counter = 0,
-		length = 63;
-	long long *array = malloc(sizeof(long long) * length),
-		parsedVal = 0;
-
-	while((parse = fgetc(data)) != EOF) {
-		switch(parse) {
-			/* If parse is a sign */
-			case '+':
-			case '-':
-				if(numDigits > 0) {
-					fprintf(stderr, "Numeric sign midway in a number\n");
-					merge_fileErrorExit(data);
-				}
-				if(sign != 0) {
-					fprintf(stderr, "Can only have one sign per number\n");
-					merge_fileErrorExit(data);
-				}
-				sign = parse;
-				break;
-			/* If parse is a spacing char */
-			case ' ':
-			case '\t':
-			case '\n':
-				/* numdigits > 0 allows trailing whitespace to not increment counter */
-				if(numDigits > 0) {
-					if(++counter == MERGE_MAXARRAY) {
-						fprintf(stderr, "Too many numbers to parse in file\n");
-						merge_fileErrorExit(data);
-					}
-					/* Dynamic memory resizer */
-					if(counter == length) {
-						if(length << 1 > ULONG_MAX) {
-							fprintf(stderr,
-								"Attempted to resize array longer than ULONG max %lu\n",
-								ULONG_MAX);
-							merge_fileErrorExit(data);
-						}
-						length = length << 1;
-						realloc(array, length * sizeof(long long));
-					}
-					numDigits = parsedVal = sign = 0;
-				}
-				break;
-			/* Try to parse a digit, or if an invalid char escape */
-			default:
-				if(parse < '0' || parse > '9') {
-					fprintf(stderr, "Invalid character in file: %c", parse);
-					merge_fileErrorExit(data);
-				}
-				
-				parse -= '0';
-				
-				if(numDigits++ == 0) {
-					if(parse == 0) {
-						fprintf(stderr, "Values in file can not have leading zeroes\n");
-						merge_fileErrorExit(data);
-					}
-					parsedVal = parse;
-					if(sign == '-')
-						parsedVal *= -1;
-				} else {
-					if(numDigits >= 10 && parsedVal * 10 + parse > LLONG_MAX) {
-						fprintf(stderr, "Value in file overflows long %lu\n", LLONG_MAX);
-						merge_fileErrorExit(data);
-					}
-					parsedVal *= 10;
-					parsedVal += parse;
-				}
-		}
-	}
-
-	/* Resize the array back down to the actual size */
-	realloc(array, sizeof(long long) * counter);
 	return array;
 }
 
@@ -379,6 +297,39 @@ double * merge_extractDoubleArray(char *filename) {
 	}
 }
 
+/* Generate a random array of ints of length length
+ * WHY IS RAND_MAX ONLY SHORT_MAX? */
+int * merge_randomInts(unsigned long length) {
+	int *array = malloc(length * sizeof(int));
+	while(length > 0)
+		array[--length] = rand();
+	return array;
+}
+
+/* Generate a random array of longs of length length*/
+long * merge_randomLongs(unsigned long length) {
+	long *array = malloc(length * sizeof(long));
+	while(length > 0)
+		array[--length] = rand() * rand();
+	return array;
+}
+
+/* Generate a random array of floats of length length */
+float * merge_randomFloats(unsigned long length) {
+	float *array = malloc(length * sizeof(float));
+	while(length > 0)
+		array[--length] = (float)rand() / rand();
+	return array;
+}
+
+/* Generate a random array of doubles of length length */
+double * merge_randomDoubles(unsigned long length) {
+	double *array = malloc(length * sizeof(double));
+	while(length > 0)
+		array[--length] = (double)rand() / rand();
+	return array;
+}
+
 /* Replacement for atoi to parse an unsigned long length
  * Returns 0 on error */
 unsigned long merge_parseUnsignedLong(char *source) {
@@ -408,48 +359,15 @@ unsigned long merge_parseUnsignedLong(char *source) {
 	return result;
 }
 
-/* Generate a random array of longs of length length*/
-long * merge_randomLongs(unsigned long length) {
-	long *array = malloc(length * sizeof(long));
-	while(length > 0)
-		array[--length] = rand();
-	return array;
-}
-
-/* Generate a random array of long longs of length length*/
-long long * merge_randomLongLongs(unsigned long length) {
-	long long *array = malloc(length * sizeof(long long));
-	while(length > 0)
-		array[--length] = rand() * rand();
-	return array;
-}
-
-/* Generate a random array of floats of length length */
-float * merge_randomFloats(unsigned long length) {
-	float *array = malloc(length * sizeof(float));
-	while(length > 0)
-		array[--length] = (float)rand() / rand();
-	return array;
-}
-
-/* Generate a random array of doubles of length length */
-double * merge_randomDoubles(unsigned long length) {
-	double *array = malloc(length * sizeof(double));
-	while(length > 0)
-		array[--length] = (double)rand() / rand();
-	return array;
-}
-
 /* Parse the arguements of program parameters into a mergeParas */
 signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	/* Requires at least one argument in any case */
 	if(argc < 2)
-		fprintf(stderr, "Requires arguements\n");
-		return -1;
+		merge_helpExit(argv[0]);
 
 	int counter = 1;
-	unsigned char typed = 0;
-	char *filename = NULL;
+	char *filename = NULL,
+		typed = 0;
 	unsigned long numRands = 0;
 
 	while(counter < argc) {
@@ -463,10 +381,10 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 					}
 					switch(argv[++counter][0]) {
 						case '0':
-							args->dataType = MLONG;
+							args->dataType = MINT;
 							break;
 						case '1':
-							args->dataType = MLONGLONG;
+							args->dataType = MLONG;
 							break;
 						case '2':
 							args->dataType = MFLOAT;
@@ -476,7 +394,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 							break;
 						default:
 							fprintf(stderr, "Invalid type declarator.  Use:\n \
-								\t0 for long, 1 for long long, or 2 for double\n");
+								\t0 for int, 1 for long, 3 for float, or 4 for double\n");
 							return -1;
 					}
 					break;
@@ -546,13 +464,11 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	 * the file is assumed to hold valid longs. */
 	if(filename != NULL) {
 		switch(args->dataType) {
-			/*@ todo convert file parser into seperate methods for each data type
-			 * also wtb templates in c, holy shit this duplication is gay */
+			 case MINT:
+				args->array = merge_extractIntArray(filename);
+				break;
 			case MLONG:
 				args->array = merge_extractLongArray(filename);
-				break;
-			case MLONGLONG:
-				args->array = merge_extractLongLongArray(filename);
 				break;
 			case MFLOAT:
 				args->array = merge_extractFloatArray(filename);
@@ -561,19 +477,18 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				args->array = merge_extractDoubleArray(filename);
 				break;
 			default:
-				fprintf(stderr, "This error should never happen, bigger problems if it did.\n");
+				fprintf(stderr, "Invalid type of integral to switch on.\n");
 				return -1;
 		}
 	/* Else check if we parsed for random array */
 	} else if(numRands != 0) {
 		switch(args->dataType) {
+			case MINT:
+				args->array = merge_randomInts(numRands);
+				break;
 			case MLONG:
 				args->array = merge_randomLongs(numRands);
 				break;
-			case MLONGLONG:
-				// @todo IMPLEMENT RANDOM LONG LONG ARRAYS WILL REQUIRE COPY / PASTE OF LEHMER RNG
-				fprintf(stderr, "Can't generate random long long array yet.\n");
-				return -1;
 			case MFLOAT:
 				args->array = merge_randomFloats(numRands);
 				break;
@@ -581,7 +496,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 				args->array = merge_randomDoubles(numRands);
 				break;	
 			default:
-				fprintf(stderr, "This error should never happen, bigger problems if it did.\n");
+				fprintf(stderr, "Invalid type of integral to switch on.\n");
 				return -1;
 		}	
 	} else {

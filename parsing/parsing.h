@@ -19,11 +19,11 @@
 #define MPARSEFLOATMAX 255
 
 /* These macros are used to denote the type of elements in array */
-#ifndef MLONG
-#define MLONG 0
+#ifndef MINT
+#define MINT 0
 #endif
-#ifndef MLONGLONG
-#define MLONGLONG 1
+#ifndef MLONG
+#define MLONG 1
 #endif
 #ifndef MFLOAT
 #define MFLOAT 2
@@ -32,13 +32,12 @@
 #define MDOUBLE 3
 #endif
 
-/* Structure for the arguments processing */
 #ifndef MERGEPARAS
 #define MERGEPARAS
 typedef struct {
 	unsigned char dataType;
-	unsigned long length,
-		numThreads;
+	unsigned long length;
+	unsigned short numThreads;
 	void *array;
 } mergeParas;
 #endif
@@ -46,18 +45,17 @@ typedef struct {
 void merge_fileErrorExit(FILE*);
 void merge_helpExit(char*);
 
+int * merge_extractIntArray(char*);
 long * merge_extractLongArray(char*);
-long long * merge_extractLongLongArray(char*);
 float * merge_extractFloatArray(char*);
 double * merge_extractDoubleArray(char*);
 
-unsigned long merge_parseUnsignedLong(char*);
-
+int * merge_randomInts(unsigned long);
 long * merge_randomLongs(unsigned long);
-long long * merge_randomLongLongs(unsigned long);
 float * merge_randomFloats(unsigned long);
 double * merge_randomDoubles(unsigned long);
 
+unsigned long merge_parseUnsignedLong(char*);
 signed char merge_parseArgs(mergeParas*, int, char**);
 
 #endif
