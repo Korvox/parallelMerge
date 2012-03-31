@@ -23,11 +23,11 @@ int main(int argc, char *argv[]) {
 		exit(EXIT_FAILURE);
 	}
 
-	/*srand(123456789);
+	srand(123456789);
 	int *randInts = merge_randomInts(numRands);
 
-	unsigned long todo = numRands + (BLOCKS - numRands % BLOCKS) % BLOCKS,
-		i;
+	//unsigned long todo = numRands + (BLOCKS - numRands % BLOCKS) % BLOCKS,
+	//	i;
 
 	/* This is the random longs array we generated, I print the
 	 * values 10 at a time to reduce system calls and make the
@@ -41,10 +41,10 @@ int main(int argc, char *argv[]) {
 	}
 	putc('\n', stdout); */
 
-	//time_t start = time(NULL);
-	//int *intRet = serialSort((void*) randInts, numRands, MINT);
-	//printf("Int array of %lu elements merged serially in %.2f seconds\n",
-	//	numRands, time(NULL) - start);
+	time_t start = time(NULL);
+	int *intRet = serialSort((void*) randInts, numRands, MINT);
+	printf("Int array of\t%lu elements merged serially in %i seconds\n",
+		numRands, time(NULL) - start);
 
 	/* This is the random longs array we generated again, and it
 	 * should not have changed from calling serialSort - serial sort
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 			randInts[i + 6], randInts[i + 7], randInts[i + 8],
 			randInts[i + 9]);
 	}
-	putc('\n', stdout);
+	putc('\n', stdout); */
 	free(randInts);
 
 	for(unsigned long i = 1; i < numRands; i++) {
@@ -79,48 +79,46 @@ int main(int argc, char *argv[]) {
 			intRet[i + 6], intRet[i + 7], intRet[i + 8],
 			intRet[i + 9]);
 	}
-	putc('\n', stdout);
-	free(intRet); */
+	putc('\n', stdout); */
+	free(intRet);
 
 	srand(123456789);
 	long *randLongs = merge_randomLongs(numRands);
-	//start = time(NULL);
+	start = time(NULL);
 	long *longRet = serialSort((void*) randLongs, numRands, MLONG);
-	//printf("long array of %lu elements merged serially in %f seconds\n",
-	//	numRands, time(NULL) - start);
-
+	printf("Long array of\t%lu elements merged serially in %i seconds\n",
+		numRands, time(NULL) - start);
+	free(randLongs);
 	for(unsigned long i = 1; i < numRands; i++) {
 		if(longRet[i - 1] > longRet[i])
 			printf("Indexes %lu and %lu are out of place\n", i - 1, i);
 	}
-	free(randLongs);
 	free(longRet);
 
 	srand(123456789);
 	float *randFloats = merge_randomFloats(numRands);
-	//start = time(NULL);
+	start = time(NULL);
 	float *floatRet = serialSort((void*) randFloats, numRands, MFLOAT);
-	//printf("Float array of %lu elements merged serially in %f seconds\n",
-	//	numRands, time(NULL) - start);
+	printf("Float array of\t%lu elements merged serially in %i seconds\n",
+		numRands, time(NULL) - start);
+	free(randFloats);
 	for(unsigned long i = 1; i < numRands; i++) {
 		if(floatRet[i - 1] > floatRet[i])
 			printf("Indexes %lu and %lu are out of place\n", i - 1, i);
 	}
-	free(randFloats);
 	free(floatRet);
 
 	srand(123456789);
 	double *randDoubles = merge_randomDoubles(numRands);
-	//start = time(NULL);
+	start = time(NULL);
 	double *doubleRet = serialSort((void*) randDoubles, numRands, MDOUBLE);
-	//printf("Double array of %lu elements merged serially in %f seconds\n",
-	//	numRands, time(NULL) - start);
+	printf("Double array of\t%lu elements merged serially in %i seconds\n",
+		numRands, time(NULL) - start);
+	free(randDoubles);
 	for(unsigned long i = 1; i < numRands; i++) {
 		if(doubleRet[i - 1] > doubleRet[i])
 			printf("Indexes %lu and %lu are out of place\n", i - 1, i);
 	}
-	free(randDoubles);
 	free(doubleRet);
-
 	exit(EXIT_SUCCESS);
 }
