@@ -1,2 +1,0 @@
-cc    -c -o serial/serial.o serial/serial.c
-gcc -o serial serial/serial.o  serialTesting.o

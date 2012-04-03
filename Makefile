@@ -1,7 +1,3 @@
-iosrcs = parsing/parsing.c
-iobjs = $(iosrcs:.c=.o)
-smsrcs = serialMerge.c
-
 ptargs = -O2 -std=c1x -Wall -pthread -o
 ptsrcs = pthreads/merge.c
 ptprog = pthreads/merge
@@ -14,6 +10,8 @@ cudaargs =
 cudasrcs = cuda/merge.c
 cudaprog = cuda/merge
 
+gensrcs = general/general.c
+
 serialprog = serial
 serialcflags = -c -Wall -std=c1x
 serialflags = -o $(serialprog)
@@ -25,6 +23,9 @@ rngsrcs = rng/rng.c
 rmflags = -f
 
 # pipe compiler errors to file w/ (make serialc 3>&1 1>&2- 2>&3-) > errors.txt
+
+genc: $(gensrcs) inputTesting.c
+	gcc $(gensrcs) inputTesting.c -o input -Wall -std=c1x -O3 -lm -fopenmp
 
 serialc: $(rngsrcs) $(iosrcs) $(serialsrcs) serialTesting.c
 	gcc -o serial -Wall -std=c1x -O2 -lm $(rngsrcs) $(iosrcs) $(serialsrcs) serialTesting.c
