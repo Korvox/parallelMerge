@@ -64,6 +64,7 @@ int * randomInts(int initialSeed, unsigned int length) {
 		unsigned char index = omp_get_thread_num();
 		array[counter] = seeds[index] = lehmerRandom(seeds[index]);
 	}
+	free(seeds);
 	return array;
 }
 
@@ -85,6 +86,7 @@ long * randomLongs(int initialSeed, unsigned int length) {
 		array[counter] = seeds[index] = lehmerRandom(seeds[index]);
 		array[counter] *= seeds[index] = lehmerRandom(seeds[index]);
 	}
+	free(seeds);
 	return array;
 }
 
@@ -107,6 +109,7 @@ float * randomFloats(int initialSeed, unsigned int length) {
 		array[counter] = seeds[index] = lehmerRandom(seeds[index]);
 		array[counter] /= seeds[index] = lehmerRandom(seeds[index]);
 	}
+	free(seeds);
 	return array;
 }
 
@@ -130,6 +133,7 @@ double * randomDoubles(int initialSeed, unsigned int length) {
 		array[counter] /= seeds[index] = lehmerRandom(seeds[index]);
 		array[counter] *= seeds[index] = lehmerRandom(seeds[index]);
 	}
+	free(seeds);
 	return array;
 }
 
