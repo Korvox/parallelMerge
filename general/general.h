@@ -33,9 +33,9 @@
 #ifndef MPARAS
 #define MPARAS
 typedef struct {
-	unsigned char dataType;
 	unsigned int length;
 	unsigned short numThreads;
+	unsigned char dataType;
 	void *array;
 } mergeParas;
 #endif

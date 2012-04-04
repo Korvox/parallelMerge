@@ -1,14 +1,11 @@
-/* Serial Merge Parsing
+/* Timing the random number generators.
  * @author Matthew Scheirer
  * @license GPL v3 */
 #include <stdio.h>
-#include <time.h>
 #include <stdlib.h>
 #include <omp.h>
 
 #include "general/general.h"
-
-#define BLOCKS 10
 
 int main(int argc, char *argv[]) {
 	if(argc != 2) {
@@ -16,6 +13,9 @@ int main(int argc, char *argv[]) {
 			argv[0]);
 		exit(EXIT_FAILURE);
 	}
+
+	printf("Running random arrays tests with %i threads\n",
+		omp_get_num_procs());
 
 	unsigned int numRands = parseUnsignedInt(argv[1]);
 	if(numRands == 0) {

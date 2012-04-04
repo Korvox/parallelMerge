@@ -117,7 +117,7 @@ double * randomDoubles(unsigned int length) {
 	return array;
 }
 
-/* Replacement for atoi to parse an unsigned long length
+/* Replacement for atoi to parse an unsigned int length
  * Returns 0 on error */
 unsigned int parseUnsignedInt(char *source) {
 	unsigned int result = 0;
@@ -135,8 +135,8 @@ unsigned int parseUnsignedInt(char *source) {
 		parse -= '0';
 
 		if(result * 10 + parse > UINT_MAX) {
-			fprintf(stderr, "Given input %s overflows unsigned int %u\n",
-				source, UINT_MAX);
+			fprintf(stderr, "Given input %s overflows unsigned int %d %u\n",
+				source, result * 10 + parse, UINT_MAX);
 			return 0;
 		}
 		
@@ -150,7 +150,7 @@ unsigned short parseUnsignedShort(char *source) {
 	unsigned char parse,
 		counter = 0;
 
-	while((parse = source[counter]) != '\0') {
+	while((parse = source[counter++]) != '\0') {
 		/* If we have an invalid char anywhere */
 		if(parse < '0' || parse > '9') {
 			fprintf(stderr, "Invlaid char in parsed long %c\n", parse);
@@ -161,10 +161,10 @@ unsigned short parseUnsignedShort(char *source) {
 		parse -= '0';
 
 		if(result * 10 + parse > USHRT_MAX) {
-			fprintf(stderr, "Given input %s overflows unsigned short %u\n",
-				source, USHRT_MAX);
+			fprintf(stderr, "Given input %s overflows unsigned short %d %u\n",
+				source, result * 10 + parse, USHRT_MAX);
 			return 0;
-		}	
+		}
 		
 		result = result * 10 + parse;
 	}
@@ -174,14 +174,14 @@ unsigned short parseUnsignedShort(char *source) {
 /* This error prints the usage of merge */
 void merge_helpExit(char *callingName) {
 	printf("Usage: %s [flags] [listsize]\n\
-		\tflags:\t-t [type #], -n [threads], -r [time sorting]\n\
-		\t-t:\tType of elements.  If not specified, defaults to int.\n\
-		\t-n:\tSort using [threads] worker threads\n\
-		\t-r:\tTime the sort, has no other arguments\n\
-		\t-help:\tPrints this dialogue.  Doesn't sort.\n\n\
-		 If no arguements are specified:\n\
-		\t[listsize] required, number of elements to\n\
-		\t have in randomly generated array to sort\n",
+	flags:\t-t [type #], -n [threads], -r [time sorting]\n\
+	-t:\tType of elements.  If not specified, defaults to int.\n\
+	-n:\tSort using [threads] worker threads\n\
+	-r:\tTime the sort, has no other arguments\n\
+	-help:\tPrints this dialogue.  Doesn't sort.\n\n\
+If no arguements are specified:\n\
+	[listsize] required, number of elements to have in\n\
+		randomly generated array to sort\n",
 		callingName);
 	exit(EXIT_FAILURE);
 }
@@ -192,10 +192,12 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	if(argc < 2)
 		merge_helpExit(argv[0]);
 
-	int counter = 1;
+	unsigned int numRands = merge_sizeLimit,
+		counter = 1;
 	char typed = 0, 
-		timing = 0;
-	unsigned int numRands = 0;
+		timed = 0,
+		threaded = 0,
+		counted = 0;
 
 	while(counter < argc) {
 		if(argv[counter][0] == '-') {
@@ -206,7 +208,11 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 						fprintf(stderr, "Can't assign multiple types\n");
 						return -1;
 					}
-					switch(argv[++counter][0]) {
+					if(++counter == argc) {
+						fprintf(stderr, "Type arguement provided no type at end of input\n");
+						return -1;
+					}
+					switch(argv[counter][0]) {
 						case '0':
 							args->dataType = MINT;
 							break;
@@ -221,23 +227,30 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 							break;
 						default:
 							fprintf(stderr, "Invalid type declarator.  Use:\n \
-								\t0 for int, 1 for long, 3 for float, or 4 for double\n");
+	0 for int, 1 for long, 3 for float, or 4 for double\n");
 							return -1;
 					}
 					break;
 				
-				case 'r': {
-					if(typed) {
-						fprintf(stderr, "Repeated declarations of timing\n");
+				case 'r':
+					if(timed++) {
+						fprintf(stderr, "Repeated declarations of timed\n");
 						return -1;
 					}
-					typed = 1;
-				}
+					break;
 				/* We are to specify the number of threads to run.  Interestingly, GCC
 				 * won't compile case statements if they declare variables and are not
 				 * wrapped in braces. */
 				case 'n': {
-					unsigned short numThreads = parseUnsignedShort(argv[++counter]);
+					if(threaded++) {
+						fprintf(stderr, "Can't specifiy number of threads multiple times\n");
+						return -1;
+					}
+					if(++counter == argc) {
+						fprintf(stderr, "Number threads provided no number to use at end of input\n");
+						return -1;
+					}
+					unsigned short numThreads = parseUnsignedShort(argv[counter]);
 					/* This happens if you use bad formatting */
 					if(numThreads <= 0) {
 						fprintf(stderr, "Bad formatting of number of threads\n");
@@ -263,11 +276,11 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 
 		/* Assume we have a random array generator value */
 		} else {
-			if(numRands != 0) {
+			if(counted++) {
 				fprintf(stderr, "Can't give multiple sizes of random numbers.\n");
 				return -1;
 			}
-			numRands = parseUnsignedInt(argv[++counter]);
+			numRands = parseUnsignedInt(argv[counter]);
 			if(numRands == 0) {
 				fprintf(stderr, "Formatting error on number of random numbers \
 					to generate.  Try again.\n");
@@ -277,25 +290,25 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 		counter++;
 	}
 
-	if(numRands != 0) {
-		switch(args->dataType) {
-			case MINT:
-				args->array = randomInts(numRands);
-				break;
-			case MLONG:
-				args->array = randomLongs(numRands);
-				break;
-			case MFLOAT:
-				args->array = randomFloats(numRands);
-				break;
-			case MDOUBLE:
-				args->array = randomDoubles(numRands);
-				break;	
-			default:
-				fprintf(stderr, "Invalid type argument.  \
-					This shouldn't be able to happen.\n");
-				return -1;
+	args->length = numRands;
+	
+	switch(args->dataType) {
+		case MINT:
+			args->array = randomInts(numRands);
+			break;
+		case MLONG:
+			args->array = randomLongs(numRands);
+			break;
+		case MFLOAT:
+			args->array = randomFloats(numRands);
+			break;
+		case MDOUBLE:
+			args->array = randomDoubles(numRands);
+			break;	
+		default:
+			fprintf(stderr, "Invalid type argument.  \
+				This shouldn't be able to happen.\n");
+			return -1;
 		}
-	}
-	return timing;
+	return timed;
 }
