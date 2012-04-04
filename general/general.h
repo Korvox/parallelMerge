@@ -41,12 +41,12 @@ typedef struct {
 #endif
 
 int lehmerRandom(int);
-int * generateSeeds(unsigned char);
+int * generateSeeds(int, unsigned char);
 
-int * randomInts(unsigned int);
-long * randomLongs(unsigned int);
-float * randomFloats(unsigned int);
-double * randomDoubles(unsigned int);
+int * randomInts(int, unsigned int);
+long * randomLongs(int, unsigned int);
+float * randomFloats(int, unsigned int);
+double * randomDoubles(int, unsigned int);
 
 unsigned int parseUnsignedInt(char*);
 unsigned short parseUnsignedShort(char*);

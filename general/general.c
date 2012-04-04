@@ -18,29 +18,45 @@ inline int lehmerRandom(int seed) {
 
 /* Generate numSeeds seed values, such that there are a total of
  * MODULUS - 1 / numSeeds random numbers between each seed in the rng */
-int * generateSeeds(unsigned char numSeeds) {
+int * generateSeeds(int initialSeed, unsigned char numSeeds) {
 	if(numSeeds > JUMPLIMIT) {
 		fprintf(stderr, "Can only generate up to %d seed values.\n",
 			JUMPLIMIT);
-		return NULL;
+		//return NULL;
+		exit(EXIT_FAILURE);
 	}
+	if(initialSeed <= 0) {
+		fprintf(stderr, "Given initial seed %i can't be zero or negative\n",
+			initialSeed);
+		//return NULL;
+		exit(EXIT_FAILURE);
+	}
+	else if(initialSeed > MODULUS) {
+		fprintf(stderr, "Given initial seed %i is too big for generating %i\n",
+			initialSeed, MODULUS);
+		//return NULL;
+		exit(EXIT_FAILURE);
+	}
+
 	int *seeds = malloc(numSeeds * sizeof(int));
 	unsigned long jumpMultipler = fmod(pow(FIRSTMULTI, numSeeds), MODULUS);
-	for(unsigned char counter = 0; counter < numSeeds; counter++)
-		seeds[counter] = jumpMultipler * (counter + 1) % (MODULUS - 1);
+	unsigned char counter;
+
+	seeds[0] = initialSeed;
+	for(counter = 1; counter < numSeeds; counter++)
+		seeds[counter] = (jumpMultipler + seeds[counter - 1]) % (MODULUS - 1);
 	return seeds;
 }
 
-int * randomInts(unsigned int length) {
+int * randomInts(int initialSeed, unsigned int length) {
 	if(length > merge_sizeLimit) {
 		fprintf(stderr, "Can't generate arrays larger than %i\n", 
 			merge_sizeLimit);
 		return NULL;
 	}
-	
+
 	unsigned char numProcs = omp_get_num_procs();
-		//remainder = length % numProcs;
-	int *seeds = generateSeeds(numProcs),
+	int *seeds = generateSeeds(initialSeed, numProcs),
 		*array = malloc(length * sizeof(int));
 	unsigned int counter;
 #pragma omp parallel for
@@ -51,18 +67,18 @@ int * randomInts(unsigned int length) {
 	return array;
 }
 
-long * randomLongs(unsigned int length) {
+long * randomLongs(int initialSeed, unsigned int length) {
 	if(length > merge_sizeLimit) {
 		fprintf(stderr, "Can't generate arrays larger than %i\n", 
 			merge_sizeLimit);
 		return NULL;
 	}
-	
+
 	unsigned char numProcs = omp_get_num_procs();
-	int *seeds = generateSeeds(numProcs);
+	int *seeds = generateSeeds(initialSeed, numProcs);
 	long *array = malloc(length * sizeof(long));
 	unsigned int counter;
-	
+
 #pragma omp parallel for
 	for(counter = 0; counter < length; counter++) {
 		unsigned char index = omp_get_thread_num();
@@ -73,18 +89,18 @@ long * randomLongs(unsigned int length) {
 }
 
 /* Generate a random array of floats of length length */
-float * randomFloats(unsigned int length) {
+float * randomFloats(int initialSeed, unsigned int length) {
 	if(length > merge_sizeLimit) {
 		fprintf(stderr, "Can't generate arrays larger than %i\n", 
 			merge_sizeLimit);
 		return NULL;
 	}
-	
+
 	unsigned char numProcs = omp_get_num_procs();
-	int *seeds = generateSeeds(numProcs);
+	int *seeds = generateSeeds(initialSeed, numProcs);
 	float *array = malloc(length * sizeof(float));
 	unsigned int counter;
-	
+
 #pragma omp parallel for
 	for(counter = 0; counter < length; counter++) {
 		unsigned char index = omp_get_thread_num();
@@ -95,18 +111,18 @@ float * randomFloats(unsigned int length) {
 }
 
 /* Generate a random array of doubles of length length */
-double * randomDoubles(unsigned int length) {
+double * randomDoubles(int initialSeed, unsigned int length) {
 	if(length > merge_sizeLimit) {
 		fprintf(stderr, "Can't generate arrays larger than %i\n", 
 			merge_sizeLimit);
 		return NULL;
 	}
-	
+
 	unsigned char numProcs = omp_get_num_procs();
-	int *seeds = generateSeeds(numProcs);
+	int *seeds = generateSeeds(initialSeed, numProcs);
 	double *array = malloc(length * sizeof(double));
 	unsigned int counter;
-	
+
 #pragma omp parallel for
 	for(counter = 0; counter < length; counter++) {
 		unsigned char index = omp_get_thread_num();
@@ -127,7 +143,7 @@ unsigned int parseUnsignedInt(char *source) {
 	while((parse = source[counter++]) != '\0') {
 		/* If we have an invalid char anywhere */
 		if(parse < '0' || parse > '9') {
-			fprintf(stderr, "Invlaid char in parsed int %c\n", parse);
+			fprintf(stderr, "Invalid char in parsed int %c\n", parse);
 			return 0;
 		}
 
@@ -174,10 +190,11 @@ unsigned short parseUnsignedShort(char *source) {
 /* This error prints the usage of merge */
 void merge_helpExit(char *callingName) {
 	printf("Usage: %s [flags] [listsize]\n\
-	flags:\t-t [type #], -n [threads], -r [time sorting]\n\
+	flags:\t-t [type #], -n [threads], -r [time sorting] -s [initial seed]\n\
 	-t:\tType of elements.  If not specified, defaults to int.\n\
 	-n:\tSort using [threads] worker threads\n\
 	-r:\tTime the sort, has no other arguments\n\
+	-s:\t[initial seed] of the random array generator\n\
 	-help:\tPrints this dialogue.  Doesn't sort.\n\n\
 If no arguements are specified:\n\
 	[listsize] required, number of elements to have in\n\
@@ -192,12 +209,14 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	if(argc < 2)
 		merge_helpExit(argv[0]);
 
-	unsigned int numRands = merge_sizeLimit,
-		counter = 1;
+	unsigned int numRands = merge_sizeLimit;
+	int counter = 1,
+		initialSeed = 123456789;
 	char typed = 0, 
 		timed = 0,
 		threaded = 0,
-		counted = 0;
+		counted = 0,
+		seeded = 0;
 
 	while(counter < argc) {
 		if(argv[counter][0] == '-') {
@@ -238,6 +257,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 						return -1;
 					}
 					break;
+					
 				/* We are to specify the number of threads to run.  Interestingly, GCC
 				 * won't compile case statements if they declare variables and are not
 				 * wrapped in braces. */
@@ -258,7 +278,23 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 					}
 					args->numThreads = numThreads;
 					} break;
-
+					
+				case 's':
+					if(seeded++) {
+						fprintf(stderr, "Can't give multiple seeds");
+						return -1;
+					}
+					if(++counter == argc) {
+						fprintf(stderr, "Initial seed not provided at end of input\n");
+						return -1;
+					}
+					initialSeed = atoi(argv[counter]);
+					if(initialSeed <= 0) {
+						fprintf(stderr, "Invalid seed %i given\n", initialSeed);
+						return -1;
+					}
+					break;
+					
 				/* h case means we probably have help, but even
 				 * if we have formatting error, we exit the same way */
 				case 'h':
@@ -282,8 +318,7 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 			}
 			numRands = parseUnsignedInt(argv[counter]);
 			if(numRands == 0) {
-				fprintf(stderr, "Formatting error on number of random numbers \
-					to generate.  Try again.\n");
+				fprintf(stderr, "Formatting error on number of random numbers to generate.  Try again.\n");
 				return -1;
 			}
 		}
@@ -294,16 +329,16 @@ signed char merge_parseArgs(mergeParas *args, int argc, char *argv[]) {
 	
 	switch(args->dataType) {
 		case MINT:
-			args->array = randomInts(numRands);
+			args->array = randomInts(initialSeed, numRands);
 			break;
 		case MLONG:
-			args->array = randomLongs(numRands);
+			args->array = randomLongs(initialSeed, numRands);
 			break;
 		case MFLOAT:
-			args->array = randomFloats(numRands);
+			args->array = randomFloats(initialSeed, numRands);
 			break;
 		case MDOUBLE:
-			args->array = randomDoubles(numRands);
+			args->array = randomDoubles(initialSeed, numRands);
 			break;	
 		default:
 			fprintf(stderr, "Invalid type argument.  \
